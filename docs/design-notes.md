@@ -55,9 +55,14 @@ The whole thing is a small graph in `lib/`:
   many spacers*, and each reload carries certification + production status. Two axes, because
   those are the two a flyer actually reasons about.
 
-`lib/graph.ts` joins the two and **validates at build time** — a reload pointing at an unknown
-case, or an adapter rule crossing diameters, fails `next build`. Cheap insurance for data that
-drives hardware buying.
+`lib/graph.ts` joins the two and **validates at build time** against a safety contract kept as
+one pure, tested function (`lib/validate.ts`). It fails `next build` on a reload pointing at an
+unknown case, an adapter rule that crosses diameters *or steps the wrong way* (a longer reload
+into a shorter case — the CATO-class edge), a duplicate id or designation, a hardware node with
+no source, or a reload whose brand/diameter disagrees with its case or whose plugged and
+ejection-charge flags contradict each other. The contract is pure so it can be unit-tested
+against deliberately-broken graphs, not just the real one. Cheap insurance for data that drives
+hardware buying.
 
 ### The one genuinely hard call: spacers
 

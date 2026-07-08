@@ -79,8 +79,11 @@ Two halves meet in a small resolver:
 Spacer compatibility is resolved only where the manufacturer publishes the rule — AeroTech
 38 mm (its full spacer chart) and Cesaroni Pro29/38/54 (up to two spacers, one or two grain
 sizes shorter). Everywhere else it's a sourced advisory rather than a fabricated step. The
-resolver (`lib/resolve.ts`) is pure and tested, and the graph fails the build on a dangling
-reference, because a wrong edge here is a safety problem, not a typo.
+resolver (`lib/resolve.ts`) is pure and tested, and the graph is checked against a safety
+contract (`lib/validate.ts`) on every build: a dangling reference, a spacer rule that steps the
+wrong way (a longer reload into a shorter case), a source-less part, or a plugged reload that
+still claims an ejection charge all fail `next build`, because a wrong edge here is a safety
+problem, not a typo.
 
 ## Running locally
 
