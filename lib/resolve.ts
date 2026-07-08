@@ -182,7 +182,7 @@ export function shoppingList(
   if (fwd) reusable.push(fwd);
   if (aft) reusable.push(aft);
 
-  const seal = partItem(motorCase.sealDisc, "Forward seal disc for the longer cases");
+  const seal = partItem(motorCase.sealDisc, "Reusable forward seal disc");
   if (seal) reusable.push(seal);
 
   const notes: string[] = [];
