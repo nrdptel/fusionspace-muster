@@ -141,6 +141,15 @@ and a relevant advisory adapter (29/54 mm) is always surfaced — phrased as "so
 fabricated count. The owned kit lives in `localStorage` (`muster.kit`), like the family's other
 per-device saved data; the lookup keeps the URL for sharing.
 
+### Filtering the busy cases
+
+Once both systems and 24–98 mm are in, a single case can fly a lot — 30-plus reloads once spacer
+fits are counted. The case-result view grows a small filter bar (shown only past ~6 reloads): sort
+by impulse or thrust, narrow by propellant, and hide out-of-production reloads, applied across the
+direct and spacer groups with an "X of Y" count. It mirrors the Motor Finder's filtering habit,
+the logic is a pure tested helper (`lib/filter.ts`), and the filter is transient view state (reset
+per case via a React key) rather than part of the shareable URL selection.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the

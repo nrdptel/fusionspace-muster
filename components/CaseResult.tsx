@@ -1,13 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import type { MotorCase } from "@/lib/data/types";
 import { partById } from "@/lib/graph";
 import { resolveCase, type ReloadFit } from "@/lib/resolve";
 import { formatImpulse } from "@/lib/format";
+import { applyFilter, propellantsOf, isNarrowing, DEFAULT_FILTER } from "@/lib/filter";
 import ReloadRow from "./ReloadRow";
+import ReloadFilters from "./ReloadFilters";
 
 /** The result for "I have this case": the case's spec, the hardware it always needs, and
- *  every reload it can fly — grouped into direct fits and spacer fits. */
+ *  every reload it can fly — grouped into direct fits and spacer fits, with a filter/sort bar
+ *  for the busy cases. */
 export default function CaseResult({
   motorCase,
   pick,
@@ -23,8 +27,19 @@ export default function CaseResult({
   const seal = motorCase.sealDisc ? partById(motorCase.sealDisc) : undefined;
   const extras = [fwd, aft, seal].filter(Boolean) as NonNullable<typeof fwd>[];
 
-  const oneSpacer = res.viaAdapter.filter((f) => f.spacers === 1);
-  const twoSpacer = res.viaAdapter.filter((f) => f.spacers === 2);
+  const [filter, setFilter] = useState(DEFAULT_FILTER);
+
+  const totalReloads = res.native.length + res.viaAdapter.length;
+  const showFilters = totalReloads >= 6;
+  const propellants = propellantsOf([...res.native, ...res.viaAdapter]);
+  const narrowing = isNarrowing(filter);
+
+  const native = applyFilter(res.native, filter);
+  const oneSpacer = applyFilter(res.viaAdapter.filter((f) => f.spacers === 1), filter);
+  const twoSpacer = applyFilter(res.viaAdapter.filter((f) => f.spacers === 2), filter);
+  const spacerShown = oneSpacer.length + twoSpacer.length;
+
+  const count = (shown: number, total: number) => (narrowing ? `${shown} of ${total}` : `${total}`);
 
   const row = (f: ReloadFit) => (
     <ReloadRow
@@ -74,33 +89,39 @@ export default function CaseResult({
         )}
       </div>
 
+      {showFilters && (
+        <ReloadFilters value={filter} onChange={setFilter} propellants={propellants} />
+      )}
+
       {/* Direct fits. */}
       <section className="mt-6">
         <h3 className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
           Reloads built for this case{" "}
-          <span className="font-normal text-zinc-500 dark:text-zinc-400">({res.native.length})</span>
+          <span className="font-normal text-zinc-500 dark:text-zinc-400">({count(native.length, res.native.length)})</span>
         </h3>
-        {res.native.length > 0 ? (
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">{res.native.map(row)}</div>
-        ) : (
+        {res.native.length === 0 ? (
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
             No reloads are listed for this case in the current data.
           </p>
+        ) : native.length > 0 ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">{native.map(row)}</div>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">No reloads match these filters.</p>
         )}
       </section>
 
-      {/* Spacer fits — 38 mm, resolved from the sourced 38RAS chart. */}
+      {/* Spacer fits — resolved from the sourced spacer chart (38 mm RMS, Cesaroni Pro29/38/54). */}
       {res.viaAdapter.length > 0 && (
         <section className="mt-8">
           <h3 className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
             Also flies with spacers{" "}
             <span className="font-normal text-zinc-500 dark:text-zinc-400">
-              ({res.viaAdapter.length}, via the {res.adapter?.designation})
+              ({count(spacerShown, res.viaAdapter.length)}, via the {res.adapter?.designation})
             </span>
           </h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             Shorter reloads this longer case can fly with the {res.adapter?.name}. Confirm the
-            spacer count against AeroTech&apos;s instructions.
+            spacer count against {motorCase.manufacturer}&apos;s instructions.
           </p>
           {oneSpacer.length > 0 && (
             <>
@@ -118,10 +139,13 @@ export default function CaseResult({
               <div className="mt-2 grid gap-2 sm:grid-cols-2">{twoSpacer.map(row)}</div>
             </>
           )}
+          {spacerShown === 0 && (
+            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">No spacer fits match these filters.</p>
+          )}
         </section>
       )}
 
-      {/* Advisory — 29/54 mm, where we don't resolve individual steps. */}
+      {/* Advisory — where we don't resolve individual steps (RMS 29/54, Cesaroni Pro24/75/98). */}
       {res.adapterAdvisory && res.adapter && (
         <div className="mt-8 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm leading-relaxed text-amber-900 dark:text-amber-200">
           <span aria-hidden className="mt-0.5 shrink-0 text-base">
