@@ -20,3 +20,4 @@ export const SIBLING_TOOLS = [
 // Data sources — credited in the footer and the methodology.
 export const THRUSTCURVE_URL = "https://www.thrustcurve.org";
 export const AEROTECH_URL = "https://www.aerotech-rocketry.com";
+export const CESARONI_URL = "https://pro38.com";

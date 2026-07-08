@@ -106,7 +106,8 @@ export function resolveReload(reload: Reload): ReloadResolution {
 
   const viaAdapter: CaseFit[] = [];
   for (const c of allCases()) {
-    if (c.diameter !== reload.diameter) continue;
+    // Same system only — a Cesaroni reload never fits AeroTech hardware, even at one diameter.
+    if (c.manufacturer !== reload.manufacturer || c.diameter !== reload.diameter) continue;
     const adapter = c.adapter ? adapterById(c.adapter) : undefined;
     if (!adapter || adapter.advisoryOnly) continue;
     for (const rule of adapter.rules) {
@@ -189,23 +190,27 @@ export function shoppingList(
   const adapter = fit === "adapter" && motorCase.adapter ? adapterById(motorCase.adapter) : undefined;
   if (adapter) {
     reusable.push({
-      name: `${adapter.designation} adapter`,
+      name: adapter.name,
       partNumber: adapter.partNumber,
-      detail:
-        `${adapter.name} — a floating forward closure plus ` +
-        `${spacers} case spacer${spacers === 1 ? "" : "s"} to fly this shorter reload`,
+      detail: `${spacers} spacer${spacers === 1 ? "" : "s"} to load this shorter reload in the longer case`,
       sources: adapter.sources,
     });
     notes.push(
-      `This is a spacer fit: it needs the ${adapter.designation} adapter and ` +
-        `${spacers} spacer${spacers === 1 ? "" : "s"}. Confirm the spacer count against ` +
-        `AeroTech's instructions before assembling.`,
+      `This is a spacer fit: it needs the ${adapter.designation} and ` +
+        `${spacers} spacer${spacers === 1 ? "" : "s"}. Confirm the spacer count against the ` +
+        `manufacturer's instructions before assembling.`,
     );
   }
 
+  // The single-use unit differs by system: an RMS kit is assembled from parts; a Pro reload is a
+  // preassembled cartridge that loads as one piece.
+  const cartridge = reload.system === "Pro";
   const consumable: ShoppingItem = {
-    name: `${reload.designation} reload kit`,
-    detail: "Single-use: grains, liner, nozzle, o-rings, delay element, igniter" +
+    name: `${reload.designation} reload ${cartridge ? "cartridge" : "kit"}`,
+    detail:
+      (cartridge
+        ? "Single-use cartridge: preassembled grains, liner, nozzle, and forward closure — loads as one piece"
+        : "Single-use: grains, liner, nozzle, o-rings, delay element, igniter") +
       (reload.ejectionCharge ? ", and ejection charge" : " (no ejection charge)"),
     sources: [reload.tcUrl],
   };
@@ -229,7 +234,11 @@ export function shoppingList(
         "your field's rules before flying.",
     );
   }
-  notes.push("A dab of high-temperature o-ring grease is needed on assembly (it comes with most hardware sets).");
+  notes.push(
+    cartridge
+      ? "A little high-temperature grease on the closure threads and o-rings helps on assembly."
+      : "A dab of high-temperature o-ring grease is needed on assembly (it comes with most hardware sets).",
+  );
 
   return { motorCase, reload, fit, spacers, reusable, consumable, notes };
 }
@@ -333,18 +342,20 @@ export function unlockSuggestions(owned: OwnedKit, limit = 5): UnlockSuggestion[
   const base = coverageIds(owned);
   const ownedCases = new Set(owned.caseIds);
   const ownedAdapters = new Set(owned.adapterIds);
-  const ownedDiameters = new Set(
-    allCases().filter((c) => ownedCases.has(c.id)).map((c) => c.diameter),
+  // Keyed by system+diameter so a "grow your kit" suggestion stays within a system you own —
+  // owning an AeroTech 38 mm case never pitches you a Cesaroni Pro38 case.
+  const key = (mfr: string, dia: number) => `${mfr}:${dia}`;
+  const ownedKeys = new Set(
+    allCases().filter((c) => ownedCases.has(c.id)).map((c) => key(c.manufacturer, c.diameter)),
   );
   const out: UnlockSuggestion[] = [];
 
-  // Unowned cases in a diameter the flyer already owns — this is a "grow your kit" helper, so
-  // it stays within the systems you're invested in rather than pitching a new diameter. Adding
-  // a case brings its native reloads (and its spacer fits if the matching adapter is owned);
-  // the set difference nets out reloads already covered.
+  // Unowned cases in a system+diameter the flyer already owns. Adding a case brings its native
+  // reloads (and its spacer fits if the matching adapter is owned); the set difference nets out
+  // reloads already covered.
   for (const c of allCases()) {
     if (ownedCases.has(c.id)) continue;
-    if (!ownedDiameters.has(c.diameter)) continue;
+    if (!ownedKeys.has(key(c.manufacturer, c.diameter))) continue;
     const next = coverageIds({ caseIds: [...owned.caseIds, c.id], adapterIds: owned.adapterIds });
     const added = next.size - base.size;
     if (added <= 0) continue;
@@ -358,11 +369,10 @@ export function unlockSuggestions(owned: OwnedKit, limit = 5): UnlockSuggestion[
     });
   }
 
-  // Unowned adapters — only useful alongside an owned case of the same diameter.
+  // Unowned adapters — only useful alongside an owned case that references them (which pins the
+  // suggestion to the right system and diameter by construction).
   for (const a of allAdapters()) {
     if (ownedAdapters.has(a.id)) continue;
-    if (!ownedDiameters.has(a.diameter)) continue;
-    // Does the flyer own a case this adapter actually helps?
     const relevant = allCases().some((c) => ownedCases.has(c.id) && c.adapter === a.id);
     if (!relevant) continue;
     if (a.advisoryOnly) {

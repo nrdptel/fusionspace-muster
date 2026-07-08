@@ -1,5 +1,5 @@
 import { RELOADS_SOURCE } from "@/lib/graph";
-import { AEROTECH_URL, THRUSTCURVE_URL } from "@/lib/links";
+import { AEROTECH_URL, CESARONI_URL, THRUSTCURVE_URL } from "@/lib/links";
 import { Disclosure } from "./ui";
 
 /** "Show your work" — the same transparency habit the siblings use. How compatibility is
@@ -21,55 +21,59 @@ export default function Methodology() {
       <div className="mt-4">
         <Disclosure summary="How a reload fits a case — direct vs. spacer">
           <p>
-            Every AeroTech RMS reload is built for one case length, shown as{" "}
-            <span className="font-mono">RMS-38/360</span> and the like — the number is the
-            case&apos;s approximate maximum total impulse in newton-seconds. A reload drops
-            straight into that case: a <strong>direct fit</strong>.
+            Every reload is built for one case length. AeroTech RMS names it by impulse —{" "}
+            <span className="font-mono">RMS-38/360</span>, the number being the case&apos;s
+            approximate maximum newton-seconds — while Cesaroni Pro names it by grain count —{" "}
+            <span className="font-mono">Pro38-3G</span>. A reload drops straight into its own case:
+            a <strong>direct fit</strong>.
           </p>
           <p>
             A <strong>longer</strong> case can fly a <strong>shorter</strong> reload too, by taking
-            up the empty length with spacers. That&apos;s a <strong>spacer fit</strong>, and it
-            needs AeroTech&apos;s Reload Adapter System (RAS): a floating forward closure plus one
-            or two case spacers. Muster only resolves the exact spacer count for{" "}
-            <strong>38&nbsp;mm</strong>, whose case lengths step by one grain each and whose full
-            spacer chart AeroTech publishes. For 29&nbsp;mm and 54&nbsp;mm the case lengths
-            aren&apos;t evenly spaced, so Muster flags that a RAS exists and points you to the
-            instructions rather than asserting a step it can&apos;t source.
+            up the empty length with spacers — a <strong>spacer fit</strong>. AeroTech uses its
+            Reload Adapter System (RAS); Cesaroni sells case spacers. Both cap it at{" "}
+            <strong>two spacers</strong>, so a case reaches only one or two sizes shorter. Muster
+            resolves the exact count where the manufacturer publishes the rule — AeroTech{" "}
+            <strong>38&nbsp;mm</strong> and Cesaroni <strong>Pro29/38/54</strong> — and elsewhere
+            (AeroTech 29/54&nbsp;mm, Cesaroni Pro24/75/98 and the 6GXL cases) it flags that spacers
+            exist and points you to the instructions rather than asserting a step it can&apos;t
+            source.
           </p>
           <p>
-            The one exception is the mid-power <span className="font-mono">RMS-29/40-120</span>{" "}
-            case: its shorter reloads carry their own spacers in the box, so it flies a whole range
-            with no separate adapter.
+            The mid-power <span className="font-mono">RMS-29/40-120</span> case is a special case:
+            its shorter reloads carry their own spacers in the box, so it flies a whole range with
+            no separate adapter.
           </p>
         </Disclosure>
 
         <Disclosure summary="What you own vs. what's in the reload">
           <p>
-            The reusable metal <strong>hardware</strong> you buy once: the case, a forward closure,
-            an aft closure (which holds the nozzle), and — on the longer cases — a forward seal
-            disc. Within a diameter, the closures are shared across <em>every</em> case length,
-            which is the whole economy of a reloadable system.
+            The reusable metal <strong>hardware</strong> you buy once, shared across every case
+            length in a diameter. For AeroTech RMS that&apos;s the case, a forward closure, an aft
+            closure, and — on the longer cases — a forward seal disc. Cesaroni Pro reuses less: on{" "}
+            <strong>Pro38</strong> you reuse only the case (both closures ship in the reload), on
+            Pro24/29/54 the case plus a rear closure, and on Pro75/98 the full set.
           </p>
           <p>
-            Everything single-use is in the <strong>reload kit</strong>: the propellant grains, the
-            liner, the nozzle, the o-rings, the delay element, the igniter, and (unless the reload
-            is plugged) the ejection charge. You discard all of it after the flight and load a fresh
-            kit next time.
+            Everything single-use is in the reload. An AeroTech <strong>kit</strong> is assembled
+            from parts — grains, liner, nozzle, o-rings, delay element, igniter, and (unless
+            plugged) the ejection charge. A Cesaroni <strong>cartridge</strong> comes preassembled
+            and loads as one piece. Either way you discard it after the flight and load a fresh one.
           </p>
           <p>
             A <strong>plugged</strong> reload has no ejection charge and must be flown with
-            electronic deployment and a plugged forward closure. A{" "}
-            <strong>sparky</strong> (metal-loaded) propellant is often restricted at the field.
-            Muster flags both.
+            electronic deployment and a plugged forward closure — common on Cesaroni, which sells
+            many reloads in both a delay and a plugged version. A <strong>sparky</strong>{" "}
+            (metal-loaded) propellant is often restricted at the field. Muster flags both.
           </p>
         </Disclosure>
 
         <Disclosure summary="Certification, and what it doesn't mean">
           <p>
-            Each reload shows its certifying body — <strong>NAR</strong> or{" "}
-            <strong>Tripoli (TRA)</strong> — as recorded by ThrustCurve, or a caution when none is
-            listed. Certification is what lets you fly a motor at an insured launch; always confirm
-            the current status with the certifying organization, since listings change.
+            Each reload shows its certifying body — <strong>NAR</strong>,{" "}
+            <strong>Tripoli (TRA)</strong>, or <strong>CAR</strong> (the Canadian body that certifies
+            most Cesaroni motors) — as recorded by ThrustCurve, or a caution when none is listed.
+            Certification is what lets you fly a motor at an insured launch; always confirm the
+            current status with the certifying organization, since listings change.
           </p>
           <p>
             <strong>Out of production is not the same as decertified.</strong> An out-of-production
@@ -95,7 +99,8 @@ export default function Methodology() {
             reload to case is ThrustCurve&apos;s own per-motor case field.
           </p>
           <p>
-            The hardware graph — the cases, the closures, the seal-disc rules, and the{" "}
+            The hardware graph — the cases, the closures, the seal-disc rules, and the spacer rules
+            from{" "}
             <a
               href={AEROTECH_URL}
               target="_blank"
@@ -104,8 +109,17 @@ export default function Methodology() {
             >
               AeroTech
             </a>{" "}
-            Reload Adapter System spacer chart — is curated by hand from the manufacturer&apos;s and
-            vendors&apos; published hardware, and every part and rule cites its source in the repo.
+            and{" "}
+            <a
+              href={CESARONI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400"
+            >
+              Cesaroni
+            </a>{" "}
+            — is curated by hand from each manufacturer&apos;s and its vendors&apos; published
+            hardware, and every part and rule cites its source in the repo.
           </p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Reload data fetched {RELOADS_SOURCE.fetched}. {RELOADS_SOURCE.note}

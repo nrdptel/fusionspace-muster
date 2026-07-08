@@ -64,7 +64,7 @@ export function FitBadge({ fit, spacers, adapter }: { fit: FitKind; spacers: num
     );
   }
   return (
-    <Pill tone="indigo" title={`Needs the ${adapter?.designation ?? "adapter"} floating forward closure and ${spacers} spacer${spacers === 1 ? "" : "s"}. Confirm against the instructions.`}>
+    <Pill tone="indigo" title={`Needs the ${adapter?.designation ?? "adapter"} and ${spacers} spacer${spacers === 1 ? "" : "s"}. Confirm against the instructions.`}>
       {fitLabel(fit, spacers, adapter)}
     </Pill>
   );

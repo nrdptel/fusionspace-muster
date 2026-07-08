@@ -13,14 +13,15 @@
 // printed instructions are always the authority on the hardware it needs; Muster never
 // asserts a combination the manufacturer doesn't support.
 
-export type Diameter = 24 | 29 | 38 | 54;
+export type Diameter = 24 | 29 | 38 | 54 | 75 | 98;
 
 export type ImpulseClass =
   | "A" | "B" | "C" | "D" | "E" | "F" | "G"
   | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O";
 
-export type Manufacturer = "AeroTech";
-export type MotorSystem = "RMS";
+export type Manufacturer = "AeroTech" | "Cesaroni";
+/** RMS = AeroTech's assembled reload system; Pro = Cesaroni's self-contained cartridge system. */
+export type MotorSystem = "RMS" | "Pro";
 
 /** Which body certified the motor, as recorded by ThrustCurve. `null` = unlisted/unknown. */
 export type CertOrg = "NAR" | "TRA" | "CAR" | null;
@@ -30,17 +31,20 @@ export type CertOrg = "NAR" | "TRA" | "CAR" | null;
  *  out of production is NOT the same as decertified). */
 export type Availability = "regular" | "OOP";
 
-/** A single-use reload kit. Sourced from ThrustCurve; see lib/data/reloads.json. */
+/** A single-use reload. For AeroTech RMS it's a kit you assemble; for Cesaroni Pro it's a
+ *  self-contained cartridge. Sourced from ThrustCurve; see lib/data/reloads.json. */
 export interface Reload {
-  /** Stable slug, e.g. "at-i161w". */
+  /** Stable slug, e.g. "at-i161w" or "cti-117g69-14a". */
   id: string;
-  /** Full designation, e.g. "I161W" or "J350W-14A". */
+  /** Full designation, e.g. "I161W" (AeroTech) or "117G69-14A" (Cesaroni). */
   designation: string;
   /** ThrustCurve common name, e.g. "I161". */
   commonName: string;
+  manufacturer: Manufacturer;
+  system: MotorSystem;
   impulseClass: ImpulseClass;
   diameter: Diameter;
-  /** The case this reload is built for, verbatim from ThrustCurve, e.g. "RMS-38/360". */
+  /** The case this reload is built for, verbatim from ThrustCurve, e.g. "RMS-38/360" or "Pro38-3G". */
   caseInfo: string;
   /** Average thrust in newtons (the number in the designation). */
   avgThrustN: number;
@@ -102,6 +106,7 @@ export interface AdapterSystem {
   /** e.g. "38RAS". */
   designation: string;
   name: string;
+  manufacturer: Manufacturer;
   diameter: Diameter;
   partNumber?: string;
   /** Reusable parts the kit contains. */
@@ -132,9 +137,11 @@ export interface MotorCase {
   /** Approximate maximum total impulse (N·s). */
   maxImpulseNs: number;
   partNumber?: string;
-  /** Reusable hardware ids the case pairs with. */
-  forwardClosure: string;
-  aftClosure: string;
+  /** Reusable forward closure id, when the flyer reuses one. Some systems ship the forward
+   *  closure inside the reload (Cesaroni Pro38 reuses only the case). */
+  forwardClosure?: string;
+  /** Reusable aft/rear closure id, when the flyer reuses one. */
+  aftClosure?: string;
   /** Forward seal disc id, when this case needs one (longer cases do). */
   sealDisc?: string;
   /** Adapter system id available for this diameter, when this case can take spacers. */

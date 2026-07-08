@@ -14,7 +14,7 @@ const DESCRIPTION =
   "Motor-hardware compatibility for high-power rocketry. Start from a reloadable motor case " +
   "and see which reloads fit — directly or with spacers — the closures they need, their " +
   "certification, and the complete hardware shopping list to fly. Or start from a reload and " +
-  "work back. AeroTech RMS, with the source for every part.";
+  "work back. AeroTech RMS and Cesaroni Pro, with the source for every part.";
 
 const TITLE = "Muster — HPR motor-hardware compatibility";
 

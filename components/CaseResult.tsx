@@ -18,9 +18,10 @@ export default function CaseResult({
   onPick: (reloadId: string) => void;
 }) {
   const res = resolveCase(motorCase);
-  const fwd = partById(motorCase.forwardClosure);
-  const aft = partById(motorCase.aftClosure);
+  const fwd = motorCase.forwardClosure ? partById(motorCase.forwardClosure) : undefined;
+  const aft = motorCase.aftClosure ? partById(motorCase.aftClosure) : undefined;
   const seal = motorCase.sealDisc ? partById(motorCase.sealDisc) : undefined;
+  const extras = [fwd, aft, seal].filter(Boolean) as NonNullable<typeof fwd>[];
 
   const oneSpacer = res.viaAdapter.filter((f) => f.spacers === 1);
   const twoSpacer = res.viaAdapter.filter((f) => f.spacers === 2);
@@ -50,18 +51,24 @@ export default function CaseResult({
             {motorCase.partNumber ? ` · P/N ${motorCase.partNumber}` : ""}
           </span>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          To build any reload below you also need the{" "}
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">{fwd?.name}</span> and{" "}
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">{aft?.name}</span>
-          {seal ? (
-            <>
-              , plus the <span className="font-medium text-zinc-700 dark:text-zinc-300">{seal.name}</span>
-            </>
-          ) : null}
-          . Those are reusable and shared across every {motorCase.diameter} mm case. Pick a reload
-          for its full list.
-        </p>
+        {extras.length > 0 ? (
+          <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            To build any reload below you also need the{" "}
+            {extras.map((p, i) => (
+              <span key={p.id}>
+                {i > 0 ? (i === extras.length - 1 ? ", plus the " : ", the ") : ""}
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">{p.name}</span>
+              </span>
+            ))}
+            . Those are reusable and shared across every {motorCase.diameter} mm case. Pick a reload
+            for its full list.
+          </p>
+        ) : (
+          <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            The reload includes its closures — you reuse only the case. Pick a reload for its full
+            list.
+          </p>
+        )}
         {motorCase.notes && (
           <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">{motorCase.notes}</p>
         )}
@@ -124,8 +131,7 @@ export default function CaseResult({
             <strong className="font-semibold">
               This case can also fly some shorter reloads with the {res.adapter.designation}.
             </strong>{" "}
-            {res.adapter.notes} The adapter is a {res.adapter.name.toLowerCase()} — a floating
-            forward closure plus case spacers.
+            {res.adapter.notes}
           </p>
         </div>
       )}

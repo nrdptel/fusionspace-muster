@@ -1,5 +1,5 @@
 import { observancesForDate } from "@/lib/observances";
-import { HUB_URL, REPO_URL, THRUSTCURVE_URL, AEROTECH_URL, SIBLING_TOOLS } from "@/lib/links";
+import { HUB_URL, REPO_URL, THRUSTCURVE_URL, AEROTECH_URL, CESARONI_URL, SIBLING_TOOLS } from "@/lib/links";
 import { GitHubIcon } from "./icons";
 
 function Dot() {
@@ -82,7 +82,7 @@ export default function Footer() {
         >
           ThrustCurve
         </a>{" "}
-        and the manufacturer (
+        and the manufacturers (
         <a
           href={AEROTECH_URL}
           target="_blank"
@@ -90,6 +90,15 @@ export default function Footer() {
           className="underline hover:text-zinc-800 dark:hover:text-zinc-200"
         >
           AeroTech
+        </a>
+        ,{" "}
+        <a
+          href={CESARONI_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-zinc-800 dark:hover:text-zinc-200"
+        >
+          Cesaroni
         </a>
         ). Personal, non-commercial project — not affiliated with any rocketry
         organization, vendor, or manufacturer. Built for the hobby rocketry community.
