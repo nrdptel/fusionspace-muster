@@ -100,6 +100,21 @@ test("Cesaroni Pro: system toggle → case → cartridge shopping list", async (
   await expect(list.getByText("Pro38-3G case", { exact: true })).toBeVisible();
 });
 
+test("AeroTech 75 mm: a large-motor case → reloads → shopping list with a seal disc", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  // Default system is AeroTech RMS; switch the diameter filter to 75 mm.
+  await page.getByRole("button", { name: "75 mm", exact: true }).first().click();
+  await page.getByRole("button", { name: /RMS-75\/5120/ }).first().click();
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+
+  // Drill into the first reload → the list carries the case, both closures, and the seal disc.
+  await page.locator("#result").getByRole("button").first().click();
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText(/75 mm forward closure/)).toBeVisible();
+  await expect(list.getByText("75 mm forward seal disc", { exact: true })).toBeVisible();
+});
+
 test("a plugged reload is flagged as electronic-deployment only", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "I have a reload" }).click();

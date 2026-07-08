@@ -93,7 +93,7 @@ build — so the framing leans hard on conservatism:
 
 ### Scope
 
-Two systems now: AeroTech RMS (24–54 mm) and Cesaroni Pro (24–98 mm) — ~62 cases and ~420
+Two systems now: AeroTech RMS (24–98 mm) and Cesaroni Pro (24–98 mm) — ~76 cases and ~480
 reloads. AeroTech came first because it's the messiest and most-asked; Cesaroni followed because
 it's the other system most flyers own, and adding it proved the graph really is brand-agnostic.
 Cross-brand certification is a natural next step.

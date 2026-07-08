@@ -244,6 +244,43 @@ describe("Cesaroni Pro — the second system", () => {
   });
 });
 
+describe("AeroTech 75 / 98 mm — the large motors", () => {
+  it("resolves a 75 mm case to its own reloads, with a seal disc and the 75RAS advisory", () => {
+    const c = caseByDesignation("RMS-75/5120");
+    expect(c?.manufacturer).toBe("AeroTech");
+    expect(c?.diameter).toBe(75);
+    const res = resolveCase(c!);
+    expect(res.native.length).toBeGreaterThan(0);
+    expect(res.native.every((f) => f.reload.diameter === 75 && f.reload.manufacturer === "AeroTech")).toBe(true);
+    // 75 mm has a Reload Adapter System, but it's advisory (not a resolved step).
+    expect(res.viaAdapter).toEqual([]);
+    expect(res.adapterAdvisory).toBe(true);
+    expect(res.adapter?.designation).toBe("75RAS");
+    const list = shoppingList(c!, res.native[0].reload, "native", 0);
+    expect(list.reusable.some((i) => i.name.includes("forward closure"))).toBe(true);
+    expect(list.reusable.some((i) => i.name.includes("seal disc"))).toBe(true);
+  });
+
+  it("98 mm is native-fit only (no adapter exists) and reaches past 20,000 N·s", () => {
+    const big = caseByDesignation("RMS-98/20480");
+    expect(big?.diameter).toBe(98);
+    const res = resolveCase(big!);
+    expect(res.native.length).toBeGreaterThan(0);
+    expect(res.viaAdapter).toEqual([]);
+    expect(res.adapterAdvisory).toBe(false);
+    expect(res.adapter).toBeUndefined();
+  });
+
+  it("keeps 75 mm systems apart: a Cesaroni Pro75 reload never resolves to AeroTech 75 mm hardware", () => {
+    const ctiPro75 = allReloads().filter((r) => r.manufacturer === "Cesaroni" && r.diameter === 75);
+    expect(ctiPro75.length).toBeGreaterThan(0);
+    for (const r of ctiPro75.slice(0, 15)) {
+      const cases = [resolveReload(r).native, ...resolveReload(r).viaAdapter].filter(Boolean).map((f) => f!.motorCase);
+      expect(cases.every((c) => c.manufacturer === "Cesaroni")).toBe(true);
+    }
+  });
+});
+
 describe("coverageFor — what an owned kit can fly", () => {
   const n360 = reloadsForCase("RMS-38/360").length;
   const n240 = reloadsForCase("RMS-38/240").length;

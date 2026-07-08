@@ -44,7 +44,7 @@ adapters you own and it counts every reload your kit already flies, then ranks t
 purchase that unlocks the most more — and it won't suggest a case whose reloads you can already
 reach with a spacer. Your kit stays on the device, nothing uploaded.
 
-Scope today is **AeroTech RMS** (24–54 mm) and **Cesaroni Pro** (24–98 mm) — the two systems
+Scope today is **AeroTech RMS** (24–98 mm) and **Cesaroni Pro** (24–98 mm) — the two systems
 most high-power flyers actually own. Choose the system with one toggle; the hardware never
 interchanges across brands, and Muster won't let a result cross that line. Spacer fits are
 resolved where the manufacturer publishes the rule (AeroTech 38 mm, Cesaroni Pro29/38/54) and
