@@ -41,4 +41,18 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(page.getByText(/How a reload fits a case/)).toBeVisible();
     await audit(page, `result/${scheme}`);
   });
+
+  test(`a11y: deep-linked case page (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/case/rms-38-360", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { level: 1, name: "RMS-38/360" })).toBeVisible();
+    await audit(page, `case-page/${scheme}`);
+  });
+
+  test(`a11y: deep-linked reload page (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/reload/at-i161w", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
+    await audit(page, `reload-page/${scheme}`);
+  });
 }
