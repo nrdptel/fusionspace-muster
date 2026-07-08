@@ -32,3 +32,4 @@ export function checkStockUrl(reload: { manufacturer: string; designation: strin
 export const THRUSTCURVE_URL = "https://www.thrustcurve.org";
 export const AEROTECH_URL = "https://www.aerotech-rocketry.com";
 export const CESARONI_URL = "https://pro38.com";
+export const LOKI_URL = "https://www.lokiresearch.com";

@@ -6,14 +6,16 @@
 import reloadsDoc from "./data/reloads.json";
 import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
 import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
+import { LOKI_CASES, LOKI_PARTS } from "./data/hardware-loki";
 import type { AdapterSystem, HardwarePart, Manufacturer, MotorCase, Reload } from "./data/types";
 import { validateGraph } from "./validate";
 
 // The full graph is every motor system merged. Cases/parts/adapters carry their manufacturer,
 // and designations are distinct across systems, so nothing collides — a Cesaroni reload can't
 // resolve to AeroTech hardware.
-const CASES: MotorCase[] = [...RMS_CASES, ...CTI_CASES];
-const PARTS: HardwarePart[] = [...RMS_PARTS, ...CTI_PARTS];
+const CASES: MotorCase[] = [...RMS_CASES, ...CTI_CASES, ...LOKI_CASES];
+const PARTS: HardwarePart[] = [...RMS_PARTS, ...CTI_PARTS, ...LOKI_PARTS];
+// Loki publishes no spacer/adapter system, so it contributes no adapters.
 const ADAPTERS: AdapterSystem[] = [...RMS_ADAPTERS, ...CTI_ADAPTERS];
 
 // The JSON is a faithful mirror; assert its shape once, here, at the boundary.
@@ -79,7 +81,7 @@ export const diameters = (): number[] => [...new Set(CASES.map((c) => c.diameter
 /** Manufacturers present, in a stable display order (AeroTech first). */
 export const manufacturers = (): Manufacturer[] => {
   const present = new Set(CASES.map((c) => c.manufacturer));
-  return (["AeroTech", "Cesaroni"] as Manufacturer[]).filter((m) => present.has(m));
+  return (["AeroTech", "Cesaroni", "Loki"] as Manufacturer[]).filter((m) => present.has(m));
 };
 
 /** Diameters available for one manufacturer, ascending. */
@@ -90,4 +92,5 @@ export const diametersFor = (mfr: Manufacturer): number[] =>
 export const SYSTEM_LABEL: Record<Manufacturer, string> = {
   AeroTech: "AeroTech RMS",
   Cesaroni: "Cesaroni Pro",
+  Loki: "Loki Research",
 };

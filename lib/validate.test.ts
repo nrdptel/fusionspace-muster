@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { validateGraph, type GraphInput } from "./validate";
 import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
 import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
+import { LOKI_CASES, LOKI_PARTS } from "./data/hardware-loki";
 import reloadsDoc from "./data/reloads.json";
 import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
 
@@ -96,8 +97,8 @@ function baseWithAdapter(): GraphInput {
 describe("validateGraph — the real merged graph", () => {
   it("passes with no violations", () => {
     const input: GraphInput = {
-      cases: [...RMS_CASES, ...CTI_CASES],
-      parts: [...RMS_PARTS, ...CTI_PARTS],
+      cases: [...RMS_CASES, ...CTI_CASES, ...LOKI_CASES],
+      parts: [...RMS_PARTS, ...CTI_PARTS, ...LOKI_PARTS],
       adapters: [...RMS_ADAPTERS, ...CTI_ADAPTERS],
       reloads: (reloadsDoc as { reloads: Reload[] }).reloads,
     };

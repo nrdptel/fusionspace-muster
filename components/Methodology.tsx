@@ -1,5 +1,5 @@
 import { RELOADS_SOURCE } from "@/lib/graph";
-import { AEROTECH_URL, CESARONI_URL, THRUSTCURVE_URL } from "@/lib/links";
+import { AEROTECH_URL, CESARONI_URL, LOKI_URL, THRUSTCURVE_URL } from "@/lib/links";
 import { Disclosure } from "./ui";
 
 /** "Show your work" — the same transparency habit the siblings use. How compatibility is
@@ -21,9 +21,10 @@ export default function Methodology() {
       <div className="mt-4">
         <Disclosure summary="How a reload fits a case — direct vs. spacer">
           <p>
-            Every reload is built for one case length. AeroTech RMS names it by impulse —{" "}
-            <span className="font-mono">RMS-38/360</span>, the number being the case&apos;s
-            approximate maximum newton-seconds — while Cesaroni Pro names it by grain count —{" "}
+            Every reload is built for one case length. AeroTech RMS and Loki Research name it by
+            impulse — <span className="font-mono">RMS-38/360</span> and{" "}
+            <span className="font-mono">76/6000</span>, the number being the case&apos;s approximate
+            newton-seconds — while Cesaroni Pro names it by grain count —{" "}
             <span className="font-mono">Pro38-3G</span>. A reload drops straight into its own case:
             a <strong>direct fit</strong>.
           </p>
@@ -36,7 +37,8 @@ export default function Methodology() {
             <strong>38&nbsp;mm</strong> and Cesaroni <strong>Pro29/38/54</strong> — and elsewhere
             (AeroTech 29/54&nbsp;mm, Cesaroni Pro24/75/98 and the 6GXL cases) it flags that spacers
             exist and points you to the instructions rather than asserting a step it can&apos;t
-            source.
+            source. <strong>Loki Research</strong> publishes no spacer system at all, so its reloads
+            are direct-fit only — each one matched to its own case.
           </p>
           <p>
             The mid-power <span className="font-mono">RMS-29/40-120</span> case is a special case:
@@ -51,7 +53,11 @@ export default function Methodology() {
             length in a diameter. For AeroTech RMS that&apos;s the case, a forward closure, an aft
             closure, and — on the longer cases — a forward seal disc. Cesaroni Pro reuses less: on{" "}
             <strong>Pro38</strong> you reuse only the case (both closures ship in the reload), on
-            Pro24/29/54 the case plus a rear closure, and on Pro75/98 the full set.
+            Pro24/29/54 the case plus a rear closure, and on Pro75/98 the full set.{" "}
+            <strong>Loki Research</strong> reuses the most — the case, the forward bulkhead, and the
+            graphite nozzle all carry over, so its reload is only the liner, grains, o-rings, and a
+            delay or smoke element. Loki&apos;s nozzle is sold by throat number and must match the
+            reload; some longer 54&nbsp;mm reloads need its extended bulkhead.
           </p>
           <p>
             Everything single-use is in the reload. An AeroTech <strong>kit</strong> is assembled
@@ -117,6 +123,15 @@ export default function Methodology() {
               className="font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400"
             >
               Cesaroni
+            </a>
+            , and{" "}
+            <a
+              href={LOKI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400"
+            >
+              Loki Research
             </a>{" "}
             — is curated by hand from each manufacturer&apos;s and its vendors&apos; published
             hardware, and every part and rule cites its source in the repo.

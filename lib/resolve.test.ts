@@ -281,6 +281,54 @@ describe("AeroTech 75 / 98 mm — the large motors", () => {
   });
 });
 
+describe("Loki Research — the third system (native-fit only)", () => {
+  it("resolves a Loki case to its own reloads, with no spacer fits and no adapter", () => {
+    const c = caseByDesignation("54/2800");
+    expect(c?.manufacturer).toBe("Loki");
+    expect(c?.system).toBe("Loki");
+    const res = resolveCase(c!);
+    expect(res.native.length).toBeGreaterThan(0);
+    expect(res.native.every((f) => f.reload.manufacturer === "Loki" && f.fit === "native")).toBe(true);
+    // Loki publishes no spacer system — every fit is native, no adapter, no advisory.
+    expect(res.viaAdapter).toEqual([]);
+    expect(res.adapter).toBeUndefined();
+    expect(res.adapterAdvisory).toBe(false);
+  });
+
+  it("reuses BOTH closures: the shopping list lists the case, forward bulkhead, and graphite nozzle", () => {
+    const c = caseByDesignation("54/2800")!;
+    const r = reloadsForCase("54/2800")[0];
+    const list = shoppingList(c, r, "native", 0);
+    const names = list.reusable.map((i) => i.name);
+    expect(names.some((n) => n.includes("54/2800 case"))).toBe(true);
+    expect(names.some((n) => n.includes("forward bulkhead"))).toBe(true);
+    expect(names.some((n) => n.includes("graphite nozzle"))).toBe(true);
+    // The reload is a kit, and Loki's reload carries no nozzle/closures (they're reusable).
+    expect(list.consumable.name).toContain("reload kit");
+    expect(list.consumable.detail).toContain("reusable");
+    // The throat-number safety constraint is surfaced as a note.
+    expect(list.notes.some((n) => n.toLowerCase().includes("throat"))).toBe(true);
+  });
+
+  it("carries the 54 mm extended-bulkhead caveat on the case", () => {
+    const c = caseByDesignation("54/1200")!;
+    expect(c.notes?.toLowerCase()).toContain("extended bulkhead");
+  });
+
+  it("never crosses systems: a Loki reload resolves only to Loki hardware", () => {
+    const loki = allReloads().filter((r) => r.manufacturer === "Loki");
+    expect(loki.length).toBeGreaterThan(40);
+    for (const r of loki) {
+      const res = resolveReload(r);
+      const cases = [res.native, ...res.viaAdapter].filter(Boolean).map((f) => f!.motorCase);
+      expect(cases.length).toBeGreaterThan(0);
+      expect(cases.every((c) => c.manufacturer === "Loki")).toBe(true);
+      // No Loki reload should ever pick up a spacer fit.
+      expect(res.viaAdapter).toEqual([]);
+    }
+  });
+});
+
 describe("coverageFor — what an owned kit can fly", () => {
   const n360 = reloadsForCase("RMS-38/360").length;
   const n240 = reloadsForCase("RMS-38/240").length;

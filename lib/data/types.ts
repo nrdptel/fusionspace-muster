@@ -19,9 +19,10 @@ export type ImpulseClass =
   | "A" | "B" | "C" | "D" | "E" | "F" | "G"
   | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O";
 
-export type Manufacturer = "AeroTech" | "Cesaroni";
-/** RMS = AeroTech's assembled reload system; Pro = Cesaroni's self-contained cartridge system. */
-export type MotorSystem = "RMS" | "Pro";
+export type Manufacturer = "AeroTech" | "Cesaroni" | "Loki";
+/** RMS = AeroTech's assembled reload system; Pro = Cesaroni's self-contained cartridge system;
+ *  Loki = Loki Research's assembled reload system (case + reusable closures, like RMS). */
+export type MotorSystem = "RMS" | "Pro" | "Loki";
 
 /** Which body certified the motor, as recorded by ThrustCurve. `null` = unlisted/unknown. */
 export type CertOrg = "NAR" | "TRA" | "CAR" | null;

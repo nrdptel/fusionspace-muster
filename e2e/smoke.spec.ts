@@ -113,6 +113,33 @@ test("Cesaroni Pro: system toggle → case → cartridge shopping list", async (
   await expect(list.getByText("Pro38-3G case", { exact: true })).toBeVisible();
 });
 
+test("Loki Research: system toggle → case → native-only shopping list with both closures reusable", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  // Switch the case picker to the Loki Research system, then the 76 mm diameter.
+  await page.getByRole("button", { name: "Loki Research" }).click();
+  await page.getByRole("button", { name: "76 mm", exact: true }).first().click();
+
+  // Pick a 76 mm Loki case (its designation is diameter/impulse, e.g. 76/6000).
+  await page.getByRole("button", { name: /76\/6000/ }).first().click();
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+
+  // Loki publishes no spacer system — there is no "Also flies with spacers" section.
+  await expect(page.locator("#result").getByText(/Also flies with spacers/)).toHaveCount(0);
+
+  // Drill into the first reload → the shopping list reuses BOTH closures (bulkhead + nozzle).
+  await page.locator("#result").getByRole("button", { name: /avg/ }).first().click();
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText(/76 mm forward bulkhead/)).toBeVisible();
+  await expect(list.getByText(/76 mm graphite nozzle/)).toBeVisible();
+  await expect(list.getByText(/reload kit/)).toBeVisible();
+  // The cross-link to the Motor Finder works for Loki too (lowercase manufacturer slug).
+  await expect(list.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+    "href",
+    /motor\.fusionspace\.co\/motor\/loki\//,
+  );
+});
+
 test("a busy case's reloads can be filtered and sorted", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /RMS-38\/360/ }).first().click();
