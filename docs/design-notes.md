@@ -172,7 +172,7 @@ per-device saved data; the lookup keeps the URL for sharing.
 
 ### Filtering the busy cases
 
-Once both systems and 24–98 mm are in, a single case can fly a lot — 30-plus reloads once spacer
+Once the full 24–98 mm range across systems is in, a single case can fly a lot — 30-plus reloads once spacer
 fits are counted. The case-result view grows a small filter bar (shown only past ~6 reloads): sort
 by impulse or thrust, narrow by propellant, and hide out-of-production reloads, applied across the
 direct and spacer groups with an "X of Y" count. It mirrors the Motor Finder's filtering habit,

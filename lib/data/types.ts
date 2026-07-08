@@ -32,8 +32,9 @@ export type CertOrg = "NAR" | "TRA" | "CAR" | null;
  *  out of production is NOT the same as decertified). */
 export type Availability = "regular" | "OOP";
 
-/** A single-use reload. For AeroTech RMS it's a kit you assemble; for Cesaroni Pro it's a
- *  self-contained cartridge. Sourced from ThrustCurve; see lib/data/reloads.json. */
+/** A single-use reload. For AeroTech RMS and Loki Research it's a kit you assemble; for
+ *  Cesaroni Pro it's a self-contained cartridge. Sourced from ThrustCurve; see
+ *  lib/data/reloads.json. */
 export interface Reload {
   /** Stable slug, e.g. "at-i161w" or "cti-117g69-14a". */
   id: string;
