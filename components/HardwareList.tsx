@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { MotorCase, Reload } from "@/lib/data/types";
 import { shoppingList, type FitKind } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
+import { checkStockUrl } from "@/lib/links";
 
 /** The complete "what to buy to fly this" panel for a chosen case + reload. Splits the
  *  one-time reusable hardware from the single-use reload, and carries the conservative
@@ -112,6 +113,16 @@ export default function HardwareList({
               {list.consumable.detail && (
                 <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{list.consumable.detail}</p>
               )}
+              <a
+                href={checkStockUrl(reload)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`See live stock and pricing for the ${reload.designation} on the HPR Motor Finder`}
+                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                Check stock &amp; pricing
+                <span aria-hidden>↗</span>
+              </a>
             </li>
           </ul>
 

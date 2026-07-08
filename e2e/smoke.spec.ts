@@ -42,6 +42,11 @@ test("case → reloads → shopping list (the core loop)", async ({ page }) => {
   await expect(list.getByText(/forward closure/)).toBeVisible();
   await expect(list.getByText(/aft closure/)).toBeVisible();
   await expect(list.getByText(/I161W reload kit/)).toBeVisible();
+  // The single-use reload cross-links to the Motor Finder for where to buy it.
+  await expect(list.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+    "href",
+    "https://motor.fusionspace.co/motor/aerotech/I161W",
+  );
 
   // The selection lives in the URL, so the view is shareable.
   await expect(page).toHaveURL(/have=case/);
@@ -64,6 +69,14 @@ test("reload → cases, including a spacer fit that adds the adapter", async ({ 
   // Pick the reload from the results.
   await page.getByRole("button", { name: /I161W/ }).first().click();
   await expect(page.getByRole("heading", { name: "Cases that fly it" })).toBeVisible();
+
+  // The spec card cross-links to the Motor Finder for live stock and pricing.
+  const stockLink = page.locator("#result").getByRole("link", { name: /Check stock & pricing/ });
+  await expect(stockLink).toHaveAttribute(
+    "href",
+    "https://motor.fusionspace.co/motor/aerotech/I161W",
+  );
+  await expect(stockLink).toHaveAttribute("target", "_blank");
 
   // Its own case is a direct fit; a longer case reaches it with spacers.
   const result = page.locator("#result");
