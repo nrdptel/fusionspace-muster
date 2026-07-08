@@ -64,6 +64,15 @@ ejection-charge flags contradict each other. The contract is pure so it can be u
 against deliberately-broken graphs, not just the real one. Cheap insurance for data that drives
 hardware buying.
 
+A second layer guards the **resolver's output**, not just the data: `lib/resolve.properties.test.ts`
+runs the safety invariants over the *whole* catalog — every reload resolves to a native case that
+matches its `caseInfo`; no fit ever crosses brand or diameter; every spacer fit fills a genuinely
+longer case with a shorter reload (never the reverse) using one or two spacers and never a reload
+the case already flies directly; the reload↔case mapping round-trips both ways; and every shopping
+list names the case, carries a sourced reusable item, and names the reload. The build-time contract
+catches a bad *node*; these catch a bad *edge in the resolver logic*, across all ~540 reloads and
+~88 cases rather than a hand-picked sample.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
