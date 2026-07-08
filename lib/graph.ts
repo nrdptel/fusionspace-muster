@@ -7,6 +7,7 @@ import reloadsDoc from "./data/reloads.json";
 import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
 import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
 import type { AdapterSystem, HardwarePart, Manufacturer, MotorCase, Reload } from "./data/types";
+import { validateGraph } from "./validate";
 
 // The full graph is every motor system merged. Cases/parts/adapters carry their manufacturer,
 // and designations are distinct across systems, so nothing collides — a Cesaroni reload can't
@@ -56,42 +57,10 @@ const adaptersById = new Map<string, AdapterSystem>();
 for (const a of ADAPTERS) adaptersById.set(a.id, a);
 
 // --- Build-time integrity checks -------------------------------------------
-// Runs on import (i.e. during `next build`), so a dangling reference is caught before
-// it can surface as a wrong or empty result on the page. Cheap insurance for safety data.
-(function validate() {
-  // Every reload must land on a known case.
-  for (const r of RELOADS) {
-    if (!casesByDesignation.has(r.caseInfo)) {
-      throw new Error(`graph: reload ${r.designation} references unknown case "${r.caseInfo}".`);
-    }
-  }
-  // Every case's referenced parts/adapter must exist.
-  for (const c of CASES) {
-    for (const ref of [c.forwardClosure, c.aftClosure, c.sealDisc].filter(Boolean) as string[]) {
-      if (!partsById.has(ref)) throw new Error(`graph: case ${c.designation} references unknown part "${ref}".`);
-    }
-    if (c.adapter && !adaptersById.has(c.adapter)) {
-      throw new Error(`graph: case ${c.designation} references unknown adapter "${c.adapter}".`);
-    }
-  }
-  // Every adapter spacer rule must point at real cases in the same diameter.
-  for (const a of ADAPTERS) {
-    for (const rule of a.rules) {
-      const base = casesByDesignation.get(rule.baseCase);
-      const flies = casesByDesignation.get(rule.fliesCase);
-      if (!base || !flies) throw new Error(`graph: adapter ${a.designation} rule references unknown case.`);
-      if (base.diameter !== a.diameter || flies.diameter !== a.diameter) {
-        throw new Error(`graph: adapter ${a.designation} rule crosses diameters.`);
-      }
-    }
-  }
-  // Case ids must be unique.
-  const ids = new Set<string>();
-  for (const c of CASES) {
-    if (ids.has(c.id)) throw new Error(`graph: duplicate case id "${c.id}".`);
-    ids.add(c.id);
-  }
-})();
+// Runs on import (i.e. during `next build`), so a dangling reference, a reversed spacer rule,
+// or a source-less node is caught before it can surface as a wrong result on the page. The
+// full contract lives in ./validate. Cheap insurance for safety data.
+validateGraph({ cases: CASES, parts: PARTS, adapters: ADAPTERS, reloads: RELOADS });
 
 // --- Accessors --------------------------------------------------------------
 export const allCases = (): MotorCase[] => CASES.slice();
