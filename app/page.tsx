@@ -1,5 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import MusterApp from "@/components/MusterApp";
+import KitPlanner from "@/components/KitPlanner";
 import Methodology from "@/components/Methodology";
 import InstallHint from "@/components/InstallHint";
 import Footer from "@/components/Footer";
@@ -27,6 +28,7 @@ const JSON_LD = {
     "Forward/aft closure and seal-disc requirements",
     "Certification and production status per reload",
     "Complete reusable-hardware shopping list",
+    "Kit planner: what your owned hardware flies, and what to buy next",
     "Shareable links; works offline; installable",
   ],
   isAccessibleForFree: true,
@@ -81,6 +83,7 @@ export default function Page() {
       </p>
 
       <MusterApp />
+      <KitPlanner />
       <Methodology />
       <InstallHint />
       <Footer />

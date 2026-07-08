@@ -98,6 +98,29 @@ messiest and most-asked system, and depth beats breadth for a safety tool. The t
 brand-agnostic (`Manufacturer`, `MotorSystem`), so CTI Pro and cross-brand certification are a
 data addition, not a rewrite.
 
+### The kit planner (companion tool)
+
+The lookup answers "given X, what fits?"; the planner answers "given everything I own, what can
+I fly, and what should I buy next?" — a natural third question, placed after the main tool behind
+a "Companion tool" divider (the same shape as Charge's vent-port helper). Check off the cases and
+adapters you own; it counts every reload the kit flies and ranks the next purchase by how many
+*new* reloads it unlocks.
+
+It's a thin, pure extension of the resolver (`coverageFor`, `unlockSuggestions` in
+`lib/resolve.ts`), so it inherits the graph's sourcing and can't invent a fit. Two properties make
+it feel smart rather than mechanical, and both fall out of computing coverage as a **set**:
+
+- Owning a longer case + the adapter already covers the shorter reloads, so the planner won't
+  pitch you a shorter case whose reloads you can *already* fly — that suggestion nets zero and is
+  dropped.
+- The adapter's value is computed against your actual cases: "the 38RAS unlocks N shorter reloads
+  across your 38 mm cases," where N excludes anything already covered.
+
+Suggestions stay within the diameters you already own (a "grow your kit" tool, not a catalogue),
+and a relevant advisory adapter (29/54 mm) is always surfaced — phrased as "some," never a
+fabricated count. The owned kit lives in `localStorage` (`muster.kit`), like the family's other
+per-device saved data; the lookup keeps the URL for sharing.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the

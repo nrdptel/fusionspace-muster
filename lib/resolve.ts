@@ -14,9 +14,12 @@
 
 import {
   adapterById,
+  allAdapters,
   allCases,
+  caseById,
   caseByDesignation,
   partById,
+  reloadById,
   reloadsForCase,
 } from "./graph";
 import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
@@ -244,4 +247,158 @@ export function fitLabel(fit: FitKind, spacers: number, adapter?: AdapterSystem)
 export function certLabel(reload: Reload): string {
   if (!reload.certOrg) return "Certification unlisted";
   return `${reload.certOrg} certified`;
+}
+
+// --- Kit coverage -----------------------------------------------------------
+// "I own this hardware — what can I already fly, and what should I buy next?" A pure
+// extension of the resolver over a set of owned cases and adapters. Everything here is
+// derived from the same validated graph, so it inherits its sourcing and can't invent a fit.
+
+/** The cases and adapters a flyer owns. */
+export interface OwnedKit {
+  caseIds: string[];
+  adapterIds: string[];
+}
+
+export interface Coverage {
+  /** Distinct reloads the kit can fly, ascending by impulse. */
+  reloads: Reload[];
+  /** Diameters where an owned case has an owned-but-unresolved RAS (29/54 mm): extra
+   *  shorter reloads are possible but not counted — surfaced as an advisory, never a number. */
+  advisoryDiameters: number[];
+}
+
+/** The set of reload ids an owned kit can fly. Native fits from every owned case, plus
+ *  spacer fits where the case's adapter is also owned and resolvable (38 mm). */
+function coverageIds(owned: OwnedKit): Set<string> {
+  const ownedCases = new Set(owned.caseIds);
+  const ownedAdapters = new Set(owned.adapterIds);
+  const ids = new Set<string>();
+  for (const c of allCases()) {
+    if (!ownedCases.has(c.id)) continue;
+    const res = resolveCase(c);
+    for (const f of res.native) ids.add(f.reload.id);
+    if (c.adapter && ownedAdapters.has(c.adapter)) {
+      const adapter = adapterById(c.adapter);
+      if (adapter && !adapter.advisoryOnly) {
+        for (const f of res.viaAdapter) ids.add(f.reload.id);
+      }
+    }
+  }
+  return ids;
+}
+
+/** Full coverage for an owned kit — the reloads it flies, plus any advisory diameters. */
+export function coverageFor(owned: OwnedKit): Coverage {
+  const ownedCases = new Set(owned.caseIds);
+  const ownedAdapters = new Set(owned.adapterIds);
+  const ids = coverageIds(owned);
+  const reloads: Reload[] = [];
+  for (const id of ids) {
+    const r = reloadById(id);
+    if (r) reloads.push(r);
+  }
+  reloads.sort((a, b) => a.diameter - b.diameter || a.totImpulseNs - b.totImpulseNs);
+
+  const advisory = new Set<number>();
+  for (const c of allCases()) {
+    if (!ownedCases.has(c.id) || !c.adapter) continue;
+    const adapter = adapterById(c.adapter);
+    if (adapter && adapter.advisoryOnly && ownedAdapters.has(c.adapter)) advisory.add(c.diameter);
+  }
+  return { reloads, advisoryDiameters: [...advisory].sort((a, b) => a - b) };
+}
+
+export interface UnlockSuggestion {
+  kind: "case" | "adapter";
+  id: string;
+  /** Human label, e.g. "RMS-38/720 case" or "38RAS adapter". */
+  label: string;
+  /** New reloads this purchase would unlock given the current kit. */
+  added: number;
+  /** True for an adapter whose spacer steps aren't resolved (29/54 mm) — `added` is 0 but
+   *  it still unlocks shorter reloads; the UI phrases it as "some", not a count. */
+  advisory: boolean;
+  /** One-line reason. */
+  detail: string;
+}
+
+/**
+ * What to buy next: for each unowned case and adapter, how many *new* reloads it adds to the
+ * current kit, ranked. Adapters are only suggested when the flyer already owns a case in that
+ * diameter that the adapter helps (otherwise the adapter does nothing on its own).
+ */
+export function unlockSuggestions(owned: OwnedKit, limit = 5): UnlockSuggestion[] {
+  if (owned.caseIds.length === 0) return [];
+  const base = coverageIds(owned);
+  const ownedCases = new Set(owned.caseIds);
+  const ownedAdapters = new Set(owned.adapterIds);
+  const ownedDiameters = new Set(
+    allCases().filter((c) => ownedCases.has(c.id)).map((c) => c.diameter),
+  );
+  const out: UnlockSuggestion[] = [];
+
+  // Unowned cases in a diameter the flyer already owns — this is a "grow your kit" helper, so
+  // it stays within the systems you're invested in rather than pitching a new diameter. Adding
+  // a case brings its native reloads (and its spacer fits if the matching adapter is owned);
+  // the set difference nets out reloads already covered.
+  for (const c of allCases()) {
+    if (ownedCases.has(c.id)) continue;
+    if (!ownedDiameters.has(c.diameter)) continue;
+    const next = coverageIds({ caseIds: [...owned.caseIds, c.id], adapterIds: owned.adapterIds });
+    const added = next.size - base.size;
+    if (added <= 0) continue;
+    out.push({
+      kind: "case",
+      id: c.id,
+      label: `${c.designation} case`,
+      added,
+      advisory: false,
+      detail: `Adds ${added} reload${added === 1 ? "" : "s"} you can't fly yet.`,
+    });
+  }
+
+  // Unowned adapters — only useful alongside an owned case of the same diameter.
+  for (const a of allAdapters()) {
+    if (ownedAdapters.has(a.id)) continue;
+    if (!ownedDiameters.has(a.diameter)) continue;
+    // Does the flyer own a case this adapter actually helps?
+    const relevant = allCases().some((c) => ownedCases.has(c.id) && c.adapter === a.id);
+    if (!relevant) continue;
+    if (a.advisoryOnly) {
+      out.push({
+        kind: "adapter",
+        id: a.id,
+        label: `${a.designation} adapter`,
+        added: 0,
+        advisory: true,
+        detail: `Lets your ${a.diameter} mm cases fly some shorter reloads (count not resolved — confirm against the instructions).`,
+      });
+      continue;
+    }
+    const next = coverageIds({ caseIds: owned.caseIds, adapterIds: [...owned.adapterIds, a.id] });
+    const added = next.size - base.size;
+    if (added <= 0) continue;
+    out.push({
+      kind: "adapter",
+      id: a.id,
+      label: `${a.designation} adapter`,
+      added,
+      advisory: false,
+      detail: `Unlocks ${added} shorter reload${added === 1 ? "" : "s"} across your ${a.diameter} mm cases.`,
+    });
+  }
+
+  // Rank the counted suggestions by reloads added; always keep room for the (few) advisory
+  // adapters, which are worth surfacing even though their gain isn't a number.
+  const advisory = out.filter((x) => x.advisory);
+  const counted = out
+    .filter((x) => !x.advisory)
+    .sort((x, y) => y.added - x.added || x.label.localeCompare(y.label));
+  return [...counted.slice(0, Math.max(0, limit - advisory.length)), ...advisory];
+}
+
+/** Look up a case or adapter for the owned-kit UI. */
+export function ownableCase(id: string): MotorCase | undefined {
+  return caseById(id);
 }
