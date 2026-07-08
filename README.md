@@ -39,6 +39,11 @@ fit) separated from the single-use reload to buy, with the part numbers and a pl
 for a club chat or an order. Conservative notes flag a plugged reload, a sparky propellant,
 an out-of-production reload, and every spacer fit.
 
+A companion **kit planner** turns the same graph on your own hardware: check off the cases and
+adapters you own and it counts every reload your kit already flies, then ranks the single
+purchase that unlocks the most more — and it won't suggest a case whose reloads you can already
+reach with a spacer. Your kit stays on the device, nothing uploaded.
+
 Scope today is the full **AeroTech RMS** line — 24, 29, 38, and 54 mm — which is the messiest
 and most-asked corner of the hobby. The 38 mm Reload Adapter System spacer chart is resolved
 exactly; the model leaves clean room for CTI Pro and cross-brand work later.

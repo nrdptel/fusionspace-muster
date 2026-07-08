@@ -6,6 +6,8 @@ import {
   shoppingList,
   fitLabel,
   certLabel,
+  coverageFor,
+  unlockSuggestions,
 } from "./resolve";
 
 function requireCase(designation: string) {
@@ -172,5 +174,84 @@ describe("labels", () => {
     expect(certLabel(r)).toBe("TRA certified");
     const unlisted = allReloads().find((x) => x.certOrg === null);
     if (unlisted) expect(certLabel(unlisted)).toBe("Certification unlisted");
+  });
+});
+
+describe("coverageFor — what an owned kit can fly", () => {
+  const n360 = reloadsForCase("RMS-38/360").length;
+  const n240 = reloadsForCase("RMS-38/240").length;
+  const n120 = reloadsForCase("RMS-38/120").length;
+
+  it("a lone case flies only its own reloads", () => {
+    const cov = coverageFor({ caseIds: ["rms-38-360"], adapterIds: [] });
+    expect(cov.reloads.length).toBe(n360);
+    expect(cov.advisoryDiameters).toEqual([]);
+  });
+
+  it("adding the owned adapter unlocks the case's spacer fits", () => {
+    const cov = coverageFor({ caseIds: ["rms-38-360"], adapterIds: ["ras-38"] });
+    // 360 natives + 240 (1 spacer) + 120 (2 spacers), all disjoint.
+    expect(cov.reloads.length).toBe(n360 + n240 + n120);
+  });
+
+  it("the adapter does nothing until it's owned", () => {
+    const without = coverageFor({ caseIds: ["rms-38-360"], adapterIds: [] });
+    const withA = coverageFor({ caseIds: ["rms-38-360"], adapterIds: ["ras-38"] });
+    expect(withA.reloads.length).toBeGreaterThan(without.reloads.length);
+  });
+
+  it("spacer fits already covered natively aren't double-counted", () => {
+    // Own the 360 and 240 cases; the 240 reloads are already flyable natively, so adding the
+    // adapter only nets the 120 reloads (the 360 case's 2-spacer step).
+    const cov = coverageFor({ caseIds: ["rms-38-360", "rms-38-240"], adapterIds: ["ras-38"] });
+    expect(cov.reloads.length).toBe(n360 + n240 + n120);
+  });
+
+  it("an owned advisory adapter (29 mm) is flagged, not counted", () => {
+    const cov = coverageFor({ caseIds: ["rms-29-360"], adapterIds: ["ras-29"] });
+    expect(cov.advisoryDiameters).toContain(29);
+    // Only the 29/360 natives are counted — the 29RAS steps aren't resolved.
+    expect(cov.reloads.length).toBe(reloadsForCase("RMS-29/360").length);
+  });
+});
+
+describe("unlockSuggestions — what to buy next", () => {
+  it("returns nothing for an empty kit", () => {
+    expect(unlockSuggestions({ caseIds: [], adapterIds: [] })).toEqual([]);
+  });
+
+  it("suggests the 38RAS to a 38/360 owner, with a real added count", () => {
+    const s = unlockSuggestions({ caseIds: ["rms-38-360"], adapterIds: [] });
+    const ras = s.find((x) => x.id === "ras-38");
+    expect(ras).toBeDefined();
+    expect(ras!.kind).toBe("adapter");
+    expect(ras!.added).toBeGreaterThan(0);
+    expect(ras!.advisory).toBe(false);
+  });
+
+  it("ranks by reloads added, and every suggestion is currently unowned", () => {
+    const owned = { caseIds: ["rms-38-360"], adapterIds: [] };
+    const s = unlockSuggestions(owned, 10);
+    for (let i = 1; i < s.length; i++) {
+      // Non-advisory suggestions are sorted by `added` descending.
+      if (!s[i].advisory && !s[i - 1].advisory) {
+        expect(s[i].added).toBeLessThanOrEqual(s[i - 1].added);
+      }
+    }
+    expect(s.every((x) => !owned.caseIds.includes(x.id) && !owned.adapterIds.includes(x.id))).toBe(true);
+  });
+
+  it("only suggests an adapter when a case in its diameter is owned", () => {
+    // A 24 mm-only kit should never be told to buy a 38RAS.
+    const s = unlockSuggestions({ caseIds: ["rms-24-40"], adapterIds: [] });
+    expect(s.find((x) => x.id === "ras-38")).toBeUndefined();
+  });
+
+  it("suggests an advisory adapter to a 29/240 owner, phrased without a number", () => {
+    const s = unlockSuggestions({ caseIds: ["rms-29-240"], adapterIds: [] }, 20);
+    const ras29 = s.find((x) => x.id === "ras-29");
+    expect(ras29).toBeDefined();
+    expect(ras29!.advisory).toBe(true);
+    expect(ras29!.added).toBe(0);
   });
 });

@@ -94,6 +94,7 @@ export const reloadById = (id: string): Reload | undefined => reloadsById.get(id
 export const reloadsForCase = (designation: string): Reload[] => (reloadsByCase.get(designation) ?? []).slice();
 export const partById = (id: string): HardwarePart | undefined => partsById.get(id);
 export const adapterById = (id: string): AdapterSystem | undefined => adaptersById.get(id);
+export const allAdapters = (): AdapterSystem[] => ADAPTERS.slice();
 
 /** Distinct diameters present, ascending. */
 export const diameters = (): number[] => [...new Set(CASES.map((c) => c.diameter))].sort((a, b) => a - b);
