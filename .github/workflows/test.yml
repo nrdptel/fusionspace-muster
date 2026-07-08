@@ -46,8 +46,27 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install
         run: npm ci
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      # Cache the downloaded browser binary between runs, keyed on the Playwright version, so a
+      # slow or hung Playwright CDN can't wedge the job on a fresh download every time.
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      # On a cache hit the browser is already present — only (re)install the fast system deps.
+      # On a miss, download the browser too. Either way, bound it so a hang fails in minutes.
+      - name: Install Playwright browser
+        timeout-minutes: 6
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install-deps chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Build
         run: npm run build
       - name: E2E (headless browser)
