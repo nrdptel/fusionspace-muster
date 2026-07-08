@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { observancesForDate } from "@/lib/observances";
+import { SITE_TITLE as TITLE, SITE_DESCRIPTION as DESCRIPTION } from "@/lib/seo";
 import ServiceWorker from "@/components/ServiceWorker";
 import "./globals.css";
 
@@ -9,14 +10,6 @@ import "./globals.css";
 // production site; a fork can override with NEXT_PUBLIC_SITE_URL on its deploy
 // host (Cloudflare Pages) to point cards at its own domain. Mirrors the siblings.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://muster.fusionspace.co";
-
-const DESCRIPTION =
-  "Motor-hardware compatibility for high-power rocketry. Start from a reloadable motor case " +
-  "and see which reloads fit — directly or with spacers — the closures they need, their " +
-  "certification, and the complete hardware shopping list to fly. Or start from a reload and " +
-  "work back. AeroTech RMS and Cesaroni Pro, with the source for every part.";
-
-const TITLE = "Muster — HPR motor-hardware compatibility";
 
 // Pre-generated at build by scripts/gen-og.mjs (a static export can't render the dynamic
 // next/og route at request time). Resolved absolutely against metadataBase. Uses the HPR

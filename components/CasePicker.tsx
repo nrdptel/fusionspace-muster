@@ -7,7 +7,7 @@ import { formatImpulse } from "@/lib/format";
 import { Segmented } from "./ui";
 
 /** Pick a case: choose a motor system, then a diameter, then the cases in it as a chip grid.
- *  The two systems are kept separate because their hardware doesn't interchange. */
+ *  The systems are kept separate because their hardware doesn't interchange across brands. */
 export default function CasePicker({
   value,
   onChange,
