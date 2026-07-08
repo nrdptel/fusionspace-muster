@@ -1,0 +1,79 @@
+// Service worker for offline use. High-power launches happen where there's no cell
+// signal, and Muster is a pure client-side lookup over a bundled dataset — so once it's
+// been loaded online, it should work at the bench or the pad with no connection: the
+// whole hardware graph ships with the page.
+//
+// Strategy:
+//   - navigations: network-first (an online visitor always gets fresh HTML), falling
+//     back to the cached app shell when offline.
+//   - other same-origin GETs (JS/CSS/fonts/icons): stale-while-revalidate, so assets
+//     load instantly and refresh in the background.
+// The cache name is versioned; old caches are cleared on activate.
+
+const CACHE = "muster-v1";
+const SHELL = "/";
+
+self.addEventListener("install", (event) => {
+  // Note: no skipWaiting() here. When a controller is already running (an updated
+  // visit), the new worker waits so it can't swap assets out from under an open tab;
+  // the page shows a "refresh" prompt and calls skipWaiting() via the message below.
+  // On a first-ever visit there's no controller, so the browser activates immediately.
+  // Best-effort: a transient failure fetching the shell must not fail the whole install
+  // (the shell is re-cached on the first online navigation anyway).
+  event.waitUntil(
+    caches.open(CACHE).then((c) => c.add(SHELL)).catch(() => {}),
+  );
+});
+
+// The page posts this when the user accepts the update, letting the waiting worker
+// take over; the page then reloads on controllerchange.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  if (new URL(req.url).origin !== self.location.origin) return;
+
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(SHELL, copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(SHELL, { ignoreSearch: true })),
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const network = fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }
+          return res;
+        })
+        // Offline and not cached: resolve to a real 504 Response rather than undefined,
+        // which would make respondWith throw and surface as an opaque network error.
+        .catch(() => cached || new Response("", { status: 504, statusText: "Offline" }));
+      return cached || network;
+    }),
+  );
+});

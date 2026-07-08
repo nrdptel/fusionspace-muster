@@ -1,0 +1,23 @@
+name: Feature or data request
+description: Suggest a feature, or a correction/addition to the hardware data
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas welcome — especially anything that makes the compatibility data more
+        complete or more trustworthy. Adding a motor system, a case, a reload, or a
+        spacer rule is data work: please include a manufacturer or cert-org source
+        so every edge in the graph can be traced.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe the feature, the motor system, or the hardware to add or correct.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source (for data changes)
+      description: A manufacturer or cert-org reference for any hardware or compatibility change.
