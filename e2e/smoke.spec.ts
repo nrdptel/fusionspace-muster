@@ -94,10 +94,30 @@ test("Cesaroni Pro: system toggle → case → cartridge shopping list", async (
   await expect(page.locator("#result").getByText(/The reload includes its closures/)).toBeVisible();
 
   // Drill into the first (native) reload → the shopping list uses Cesaroni's cartridge wording.
-  await page.locator("#result").getByRole("button").first().click();
+  await page.locator("#result").getByRole("button", { name: /avg/ }).first().click();
   const list = page.locator("#shopping-list");
   await expect(list.getByText(/reload cartridge/)).toBeVisible();
   await expect(list.getByText("Pro38-3G case", { exact: true })).toBeVisible();
+});
+
+test("a busy case's reloads can be filtered and sorted", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /RMS-38\/360/ }).first().click();
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+
+  const result = page.locator("#result");
+  const rows = result.getByRole("button", { name: /·.*avg/ });
+  const before = await rows.count();
+  expect(before).toBeGreaterThan(4);
+
+  // Narrowing by propellant reduces the list and switches the count to an "X of Y" label.
+  await result.getByRole("combobox", { name: /Filter by propellant/ }).selectOption("White Lightning");
+  await expect(result.getByText(/\d+ of \d+/).first()).toBeVisible();
+  expect(await rows.count()).toBeLessThan(before);
+
+  // Sorting by thrust keeps the (filtered) list populated.
+  await result.getByRole("button", { name: "Thrust" }).click();
+  expect(await rows.count()).toBeGreaterThan(0);
 });
 
 test("AeroTech 75 mm: a large-motor case → reloads → shopping list with a seal disc", async ({ page }) => {
@@ -109,7 +129,7 @@ test("AeroTech 75 mm: a large-motor case → reloads → shopping list with a se
   await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
 
   // Drill into the first reload → the list carries the case, both closures, and the seal disc.
-  await page.locator("#result").getByRole("button").first().click();
+  await page.locator("#result").getByRole("button", { name: /avg/ }).first().click();
   const list = page.locator("#shopping-list");
   await expect(list.getByText(/75 mm forward closure/)).toBeVisible();
   await expect(list.getByText("75 mm forward seal disc", { exact: true })).toBeVisible();

@@ -104,7 +104,7 @@ export default function MusterApp() {
 
       <div id="result">
         {mounted && state.mode === "case" && selectedCase && (
-          <CaseResult motorCase={selectedCase} pick={state.pick} onPick={setPick} />
+          <CaseResult key={selectedCase.id} motorCase={selectedCase} pick={state.pick} onPick={setPick} />
         )}
         {mounted && state.mode === "reload" && selectedReload && (
           <ReloadResult reload={selectedReload} pick={state.pick} onPick={setPick} />
