@@ -1,0 +1,46 @@
+name: Bug report
+description: Something on the site is wrong or broken
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! A reminder up front: Muster is a shopping aid, and
+        the reload's own printed instructions are always the authority on what
+        hardware it needs. If the app and a manufacturer's instructions disagree,
+        that's worth reporting — please include the source. Bugs are when a
+        compatibility result, a required part, or the UI is actually wrong.
+  - type: input
+    id: where
+    attributes:
+      label: Where?
+      description: Which case, reload, or part is involved? A share link is ideal.
+      placeholder: e.g. RMS-38/360 → H128W — or paste the URL
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      description: What did you expect, and what did you actually see?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - A compatibility result looks wrong
+        - A missing or extra required part (closure / spacer)
+        - Certification status
+        - Shareable link / saved state
+        - Layout / dark mode / display
+        - Something else
+  - type: textarea
+    id: source
+    attributes:
+      label: Source
+      description: A manufacturer or cert-org reference backing the correction, if you have one.
+  - type: input
+    id: env
+    attributes:
+      label: Browser / device (optional)
+      placeholder: e.g. Chrome on Android, Safari on iPhone
