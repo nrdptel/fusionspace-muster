@@ -9,7 +9,7 @@ Motor-hardware compatibility for high-power rocketry, at
 Reloadable motor hardware is a graph, and it's easy to get lost in it: a case fits some
 reloads directly and others only with spacers, each reload needs the right closures, and a few
 need a seal disc or a plugged closure. Muster makes that graph interactive across **AeroTech
-RMS** and **Cesaroni Pro**. Tell it a case you own and it shows every reload it can fly —
+RMS**, **Cesaroni Pro**, and **Loki Research**. Tell it a case you own and it shows every reload it can fly —
 directly or with spacers — each reload's certification, and the complete list of reusable
 hardware to buy. Or start from a reload and it works back to the cases and hardware that fly it.
 
@@ -44,11 +44,12 @@ adapters you own and it counts every reload your kit already flies, then ranks t
 purchase that unlocks the most more — and it won't suggest a case whose reloads you can already
 reach with a spacer. Your kit stays on the device, nothing uploaded.
 
-Scope today is **AeroTech RMS** (24–98 mm) and **Cesaroni Pro** (24–98 mm) — the two systems
-most high-power flyers actually own. Choose the system with one toggle; the hardware never
-interchanges across brands, and Muster won't let a result cross that line. Spacer fits are
-resolved where the manufacturer publishes the rule (AeroTech 38 mm, Cesaroni Pro29/38/54) and
-flagged as an advisory elsewhere. Cross-brand certification is a natural next step.
+Scope today is **AeroTech RMS** (24–98 mm), **Cesaroni Pro** (24–98 mm), and **Loki Research**
+(38–76 mm) — the systems most high-power flyers actually own. Choose the system with one toggle;
+the hardware never interchanges across brands, and Muster won't let a result cross that line.
+Spacer fits are resolved where the manufacturer publishes the rule (AeroTech 38 mm, Cesaroni
+Pro29/38/54) and flagged as an advisory elsewhere; Loki publishes no spacer system, so its
+reloads are direct-fit only. Cross-brand certification is a natural next step.
 
 - **Certification as a dimension, not a checkbox** — each reload carries its certifying body
   (NAR / Tripoli) or a caution when none is listed, and out-of-production is shown as its own
@@ -72,13 +73,14 @@ Two halves meet in a small resolver:
   (`lib/data/reloads.json`), and the reload → case mapping is ThrustCurve's own per-motor
   case field.
 - The **hardware graph** — cases, closures, seal-disc rules, and spacer rules — is curated by
-  hand: `lib/data/hardware.ts` for AeroTech RMS and `lib/data/hardware-cti.ts` for Cesaroni Pro,
-  with a source on every node. Cases, closures, and adapters all carry their manufacturer, and a
-  Cesaroni reload can never resolve to AeroTech hardware.
+  hand: `lib/data/hardware.ts` for AeroTech RMS, `lib/data/hardware-cti.ts` for Cesaroni Pro, and
+  `lib/data/hardware-loki.ts` for Loki Research, with a source on every node. Cases, closures, and
+  adapters all carry their manufacturer, and a reload can never resolve to another brand's hardware.
 
 Spacer compatibility is resolved only where the manufacturer publishes the rule — AeroTech
 38 mm (its full spacer chart) and Cesaroni Pro29/38/54 (up to two spacers, one or two grain
-sizes shorter). Everywhere else it's a sourced advisory rather than a fabricated step. The
+sizes shorter). Everywhere else it's a sourced advisory rather than a fabricated step; Loki
+Research publishes no spacer system, so its reloads are modeled direct-fit only. The
 resolver (`lib/resolve.ts`) is pure and tested, and the graph is checked against a safety
 contract (`lib/validate.ts`) on every build: a dangling reference, a spacer rule that steps the
 wrong way (a longer reload into a shorter case), a source-less part, or a plugged reload that

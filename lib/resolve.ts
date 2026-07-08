@@ -177,8 +177,16 @@ export function shoppingList(
   };
   reusable.push(caseItem);
 
+  // Loki reuses both closures AND the graphite nozzle (the reload carries no closures at all),
+  // so its aft-end part is a reusable nozzle, not a holder for a single-use one.
+  const loki = reload.system === "Loki";
   const fwd = partItem(motorCase.forwardClosure, "Reusable; shared across every case length in this diameter");
-  const aft = partItem(motorCase.aftClosure, "Reusable; holds the reload's single-use nozzle");
+  const aft = partItem(
+    motorCase.aftClosure,
+    loki
+      ? "Reusable graphite nozzle — fit the throat size your reload's instructions specify"
+      : "Reusable; holds the reload's single-use nozzle",
+  );
   if (fwd) reusable.push(fwd);
   if (aft) reusable.push(aft);
 
@@ -210,7 +218,9 @@ export function shoppingList(
     detail:
       (cartridge
         ? "Single-use cartridge: preassembled grains, liner, nozzle, and forward closure — loads as one piece"
-        : "Single-use: grains, liner, nozzle, o-rings, delay element, igniter") +
+        : loki
+          ? "Single-use: liner, propellant grains, o-rings, and the delay or smoke element (the nozzle and closures are reusable, not in the reload)"
+          : "Single-use: grains, liner, nozzle, o-rings, delay element, igniter") +
       (reload.ejectionCharge ? ", and ejection charge" : " (no ejection charge)"),
     sources: [reload.tcUrl],
   };
@@ -232,6 +242,12 @@ export function shoppingList(
     notes.push(
       "Sparky (metal-loaded) propellant: many ranges restrict these for fire risk. Check " +
         "your field's rules before flying.",
+    );
+  }
+  if (loki) {
+    notes.push(
+      "Loki's graphite nozzle is reusable and sold by throat number — the correct throat for " +
+        "this reload is in its instructions, and the wrong one can cause a failure.",
     );
   }
   notes.push(

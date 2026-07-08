@@ -98,10 +98,11 @@ build — so the framing leans hard on conservatism:
 
 ### Scope
 
-Two systems now: AeroTech RMS (24–98 mm) and Cesaroni Pro (24–98 mm) — ~76 cases and ~480
-reloads. AeroTech came first because it's the messiest and most-asked; Cesaroni followed because
-it's the other system most flyers own, and adding it proved the graph really is brand-agnostic.
-Cross-brand certification is a natural next step.
+Three systems now: AeroTech RMS (24–98 mm), Cesaroni Pro (24–98 mm), and Loki Research (38–76 mm)
+— ~88 cases and ~540 reloads. AeroTech came first because it's the messiest and most-asked;
+Cesaroni followed because it's the other system most flyers own, and adding it proved the graph
+really is brand-agnostic; Loki is the third-most-owned reload brand and a clean fit. Cross-brand
+certification is a natural next step.
 
 ### Adding Cesaroni Pro (the second system)
 
@@ -122,6 +123,29 @@ own published one — *up to two spacers, one or two grain-sizes shorter* — wh
 sourced, is resolved for the standard Pro29/38/54 cases exactly like the RMS 38 mm chart; Pro24
 (no spacers), the 6GXL cases, and Pro75/98 stay advisory. Many Cesaroni reloads ship in both a
 delay and a plugged (`-P`) version, so the plugged/electronic-deployment flag earns its keep here.
+
+### Adding Loki Research (the third system)
+
+Loki was the cleanest addition yet, because the graph and the `Manufacturer`/`MotorSystem` types
+were already built for it: `lib/data/hardware-loki.ts` sits beside the other two and `graph.ts`
+merges all three. What research corrected was the *reuse model*, which is the opposite end of the
+spectrum from Cesaroni. Every Loki instruction sheet splits its parts into reusable "Motor
+Hardware" and a single-use "Reload Kit", and the reusable set is the largest of the three: the
+case, the forward bulkhead, **and** the graphite nozzle all carry over — so unlike AeroTech (whose
+nozzle is single-use) and unlike Cesaroni (which ships both closures inside the reload), a Loki
+reload contains no closures at all, only the liner, grains, o-rings, and a delay/smoke element. The
+shopping-list wording is system-aware for this.
+
+The bigger discipline call was **fits**: Loki publishes no spacer or reload-adapter system, so Loki
+is modeled **native-fit only** — no adapter nodes, no advisory. That's the honest read of the
+sourcing, not a gap. Two per-reload constraints Loki states but that aren't in the ThrustCurve
+catalog are carried as conservative notes rather than resolved: the graphite nozzle is sold by
+throat number and must match the reload, and some longer 54 mm reloads need Loki's extended
+bulkhead. Finally, Loki's **98 mm** hardware is discontinued ("all production on hold"), so the lone
+98/12500 reload — made-to-order for legacy hardware, with no case to buy — is deliberately omitted;
+a shopping aid shouldn't point you at hardware you can't purchase. Loki's build-time contract is the
+same one every system passes (`lib/validate.ts`), and a Loki reload can no more resolve to AeroTech
+or Cesaroni hardware than the reverse.
 
 ### The kit planner (companion tool)
 
