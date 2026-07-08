@@ -3,6 +3,7 @@
 import type { Reload } from "@/lib/data/types";
 import { resolveReload, type CaseFit } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
+import { checkStockUrl } from "@/lib/links";
 import { AvailabilityBadge, CertBadge, FitBadge, PluggedBadge, SparkyBadge } from "./badges";
 
 /** The result for "I want to fly this reload": the reload's spec and certification, then the
@@ -71,6 +72,16 @@ export default function ReloadResult({
           <SparkyBadge reload={reload} />
           <AvailabilityBadge reload={reload} />
         </div>
+        <a
+          href={checkStockUrl(reload)}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`See live stock and pricing for the ${reload.designation} on the HPR Motor Finder`}
+          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+        >
+          Check stock &amp; pricing
+          <span aria-hidden>↗</span>
+        </a>
       </div>
 
       <section className="mt-6">
