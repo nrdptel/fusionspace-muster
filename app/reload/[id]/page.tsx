@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { allReloads, reloadById, SYSTEM_LABEL } from "@/lib/graph";
-import { resolveReload, certLabel, type CaseFit } from "@/lib/resolve";
+import { resolveReload, shoppingList, certLabel, type CaseFit } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
@@ -44,6 +44,9 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
   const res = resolveReload(r);
   const label = SYSTEM_LABEL[r.manufacturer];
   const toolHref = `/?have=reload&reload=${r.id}`;
+  // The complete "what to buy" for the simplest (native-case) build, so the page answers the
+  // question on its own; the tool has the copyable list and any spacer-fit variants.
+  const nativeList = res.native ? shoppingList(res.native.motorCase, r, "native", 0) : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -136,6 +139,60 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
         Build only to the reload&apos;s printed instructions — always the authority — and confirm
         every part with the manufacturer before you buy or fly.
       </p>
+
+      {nativeList && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
+            What you need to fly it
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            The simplest build — in its own{" "}
+            <span className="font-mono">{res.native!.motorCase.designation}</span> case. Reusable
+            hardware you buy once, plus the single-use reload.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Reusable hardware to own
+              </h3>
+              <ul className="mt-2 list-none space-y-2">
+                {nativeList.reusable.map((item, i) => (
+                  <li key={i} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-medium text-zinc-800 dark:text-zinc-200">{item.name}</span>
+                      {item.partNumber && (
+                        <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">{item.partNumber}</span>
+                      )}
+                    </div>
+                    {item.detail && <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</p>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Single-use reload to buy
+              </h3>
+              <div className="mt-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+                <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">{nativeList.consumable.name}</span>
+                {nativeList.consumable.detail && (
+                  <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{nativeList.consumable.detail}</p>
+                )}
+              </div>
+              {nativeList.notes.length > 0 && (
+                <ul className="mt-3 list-none space-y-1.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  {nativeList.notes.map((n, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span aria-hidden className="mt-0.5 text-zinc-400 dark:text-zinc-600">•</span>
+                      <span>{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">

@@ -67,6 +67,15 @@ export default function MusterApp() {
   const selectedReload = state.reloadId ? reloadById(state.reloadId) : undefined;
   const hasResult = (state.mode === "case" && selectedCase) || (state.mode === "reload" && selectedReload);
 
+  // The canonical, standalone page for the current selection — a cleaner URL to share or
+  // bookmark than the live query-string view.
+  const pagePath =
+    state.mode === "case" && selectedCase
+      ? `/case/${selectedCase.id}`
+      : state.mode === "reload" && selectedReload
+        ? `/reload/${selectedReload.id}`
+        : undefined;
+
   // Render a stable shell until mounted so the first client paint matches the server HTML
   // (URL-derived selection is applied after hydration).
   const view = mounted ? state : ({ mode: "case" } as AppState);
@@ -84,13 +93,25 @@ export default function MusterApp() {
           ]}
         />
         {hasResult && (
-          <button
-            type="button"
-            onClick={shareLink}
-            className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            {copied ? "Link copied ✓" : "Share this view"}
-          </button>
+          <div className="flex items-center gap-3">
+            {pagePath && (
+              <a
+                href={pagePath}
+                className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                title="Open the standalone, shareable page for this selection"
+              >
+                Open as a page
+                <span aria-hidden>↗</span>
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={shareLink}
+              className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              {copied ? "Link copied ✓" : "Share this view"}
+            </button>
+          </div>
         )}
       </div>
 
