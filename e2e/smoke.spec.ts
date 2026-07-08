@@ -30,6 +30,9 @@ test("case → reloads → shopping list (the core loop)", async ({ page }) => {
   const i161 = page.locator("#result").getByRole("button", { name: /I161W/ }).first();
   await expect(i161).toBeVisible();
 
+  // A selection exposes a link to its canonical, standalone page.
+  await expect(page.getByRole("link", { name: /Open as a page/ })).toHaveAttribute("href", "/case/rms-38-360");
+
   // The longer case's spacer fits are advertised via the 38RAS.
   await expect(page.getByText(/Also flies with spacers/)).toBeVisible();
   await expect(page.getByText(/38RAS/).first()).toBeVisible();
@@ -161,6 +164,13 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
 
   await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cases that fly it" })).toBeVisible();
+
+  // The page answers "what to buy" on its own: the reusable hardware + the reload kit.
+  await expect(page.getByRole("heading", { name: "What you need to fly it" })).toBeVisible();
+  const need = page.locator("section", { has: page.getByRole("heading", { name: "What you need to fly it" }) });
+  await expect(need.getByText("RMS-38/360 case", { exact: true })).toBeVisible();
+  await expect(need.getByText(/forward closure/)).toBeVisible();
+  await expect(need.getByText(/I161W reload kit/)).toBeVisible();
 
   // Its own case links to that case's page.
   await expect(page.getByRole("link", { name: /RMS-38\/360/ }).first()).toHaveAttribute("href", "/case/rms-38-360");
