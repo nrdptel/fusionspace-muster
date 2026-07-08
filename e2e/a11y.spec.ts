@@ -34,7 +34,7 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(page.getByRole("heading", { name: /To fly the I161W/ })).toBeVisible();
     // Populate the kit planner too, so its coverage + suggestions are audited.
     await page.locator("#kit").getByRole("button", { name: /RMS-38\/360/ }).click();
-    await page.locator("#kit").getByRole("button", { name: /38RAS adapter/ }).click();
+    await page.locator("#kit").getByRole("button", { name: /38RAS/ }).click();
     await expect(page.locator("#kit").getByText("Your kit flies")).toBeVisible();
     // Reveal the collapsed methodology + install disclosures so their contents are audited.
     await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));

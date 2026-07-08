@@ -4,8 +4,16 @@
 // shipping a broken compatibility result.
 
 import reloadsDoc from "./data/reloads.json";
-import { CASES, PARTS, ADAPTERS } from "./data/hardware";
-import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
+import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
+import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
+import type { AdapterSystem, HardwarePart, Manufacturer, MotorCase, Reload } from "./data/types";
+
+// The full graph is every motor system merged. Cases/parts/adapters carry their manufacturer,
+// and designations are distinct across systems, so nothing collides — a Cesaroni reload can't
+// resolve to AeroTech hardware.
+const CASES: MotorCase[] = [...RMS_CASES, ...CTI_CASES];
+const PARTS: HardwarePart[] = [...RMS_PARTS, ...CTI_PARTS];
+const ADAPTERS: AdapterSystem[] = [...RMS_ADAPTERS, ...CTI_ADAPTERS];
 
 // The JSON is a faithful mirror; assert its shape once, here, at the boundary.
 const RELOADS = (reloadsDoc.reloads as unknown as Reload[]).slice();
@@ -98,3 +106,19 @@ export const allAdapters = (): AdapterSystem[] => ADAPTERS.slice();
 
 /** Distinct diameters present, ascending. */
 export const diameters = (): number[] => [...new Set(CASES.map((c) => c.diameter))].sort((a, b) => a - b);
+
+/** Manufacturers present, in a stable display order (AeroTech first). */
+export const manufacturers = (): Manufacturer[] => {
+  const present = new Set(CASES.map((c) => c.manufacturer));
+  return (["AeroTech", "Cesaroni"] as Manufacturer[]).filter((m) => present.has(m));
+};
+
+/** Diameters available for one manufacturer, ascending. */
+export const diametersFor = (mfr: Manufacturer): number[] =>
+  [...new Set(CASES.filter((c) => c.manufacturer === mfr).map((c) => c.diameter))].sort((a, b) => a - b);
+
+/** The full system label for a manufacturer, e.g. "AeroTech RMS". */
+export const SYSTEM_LABEL: Record<Manufacturer, string> = {
+  AeroTech: "AeroTech RMS",
+  Cesaroni: "Cesaroni Pro",
+};

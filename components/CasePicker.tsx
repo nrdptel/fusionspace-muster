@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { allCases, diameters, reloadsForCase } from "@/lib/graph";
+import type { Manufacturer } from "@/lib/data/types";
+import { allCases, caseById, diametersFor, manufacturers, reloadsForCase, SYSTEM_LABEL } from "@/lib/graph";
 import { formatImpulse } from "@/lib/format";
 import { Segmented } from "./ui";
 
-/** Pick a case: a diameter filter, then the cases in that diameter as a chip grid. Keeps
- *  the whole AeroTech RMS case ladder visible at a glance without a long scroll. */
+/** Pick a case: choose a motor system, then a diameter, then the cases in it as a chip grid.
+ *  The two systems are kept separate because their hardware doesn't interchange. */
 export default function CasePicker({
   value,
   onChange,
@@ -15,11 +16,23 @@ export default function CasePicker({
   onChange: (caseId: string) => void;
 }) {
   const cases = allCases();
-  const dias = diameters();
-  const selected = cases.find((c) => c.id === value);
-  const [dia, setDia] = useState<number>(selected?.diameter ?? 38);
+  const mfrs = manufacturers();
+  const selected = value ? caseById(value) : undefined;
+  const [mfr, setMfr] = useState<Manufacturer>(selected?.manufacturer ?? "AeroTech");
 
-  const shown = cases.filter((c) => c.diameter === dia);
+  const dias = diametersFor(mfr);
+  const selectedDia = selected && selected.manufacturer === mfr ? selected.diameter : undefined;
+  const [dia, setDia] = useState<number>(selectedDia ?? dias[dias.length >= 3 ? 2 : 0]);
+
+  // Keep the diameter valid when the system changes.
+  const effectiveDia = dias.includes(dia) ? dia : dias[0];
+  const shown = cases.filter((c) => c.manufacturer === mfr && c.diameter === effectiveDia);
+
+  const changeMfr = (m: Manufacturer) => {
+    setMfr(m);
+    const d = diametersFor(m);
+    if (!d.includes(dia)) setDia(d[d.length >= 3 ? 2 : 0]);
+  };
 
   return (
     <div>
@@ -27,9 +40,21 @@ export default function CasePicker({
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Which case do you have?
         </span>
+        {mfrs.length > 1 && (
+          <Segmented
+            ariaLabel="Motor system"
+            value={mfr}
+            onChange={(v) => changeMfr(v as Manufacturer)}
+            options={mfrs.map((m) => ({ value: m, label: SYSTEM_LABEL[m] }))}
+          />
+        )}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <Segmented
           ariaLabel="Case diameter"
-          value={String(dia)}
+          size="sm"
+          value={String(effectiveDia)}
           onChange={(v) => setDia(Number(v))}
           options={dias.map((d) => ({ value: String(d), label: `${d} mm` }))}
         />

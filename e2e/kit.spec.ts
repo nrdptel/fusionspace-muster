@@ -13,7 +13,7 @@ test("kit planner: coverage grows with owned hardware, and persists", async ({ p
   await expect(kit.getByText(/11\s*reloads/)).toBeVisible();
 
   // Add the 38RAS adapter → the 38/240 and 38/120 spacer fits become flyable (11 + 6 + 4 = 21).
-  await kit.getByRole("button", { name: /38RAS adapter/ }).click();
+  await kit.getByRole("button", { name: /38RAS/ }).click();
   await expect(kit.getByText(/21\s*reloads/)).toBeVisible();
 
   // It suggests the next purchase.

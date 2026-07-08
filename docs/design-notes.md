@@ -93,10 +93,30 @@ build — so the framing leans hard on conservatism:
 
 ### Scope
 
-AeroTech RMS end-to-end — 24 / 29 / 38 / 54 mm, ~24 cases and 133 reloads — because it's the
-messiest and most-asked system, and depth beats breadth for a safety tool. The types are
-brand-agnostic (`Manufacturer`, `MotorSystem`), so CTI Pro and cross-brand certification are a
-data addition, not a rewrite.
+Two systems now: AeroTech RMS (24–54 mm) and Cesaroni Pro (24–98 mm) — ~62 cases and ~420
+reloads. AeroTech came first because it's the messiest and most-asked; Cesaroni followed because
+it's the other system most flyers own, and adding it proved the graph really is brand-agnostic.
+Cross-brand certification is a natural next step.
+
+### Adding Cesaroni Pro (the second system)
+
+The payoff of the `Manufacturer` / `MotorSystem` types: Cesaroni was a data addition, not a
+rewrite. `lib/data/hardware-cti.ts` sits beside `hardware.ts`, `graph.ts` merges the two, and
+the resolver gained one guard — same-manufacturer only — so a Cesaroni reload can't resolve to
+AeroTech hardware even at a shared diameter. The reloads are the same ThrustCurve mirror,
+tagged with `manufacturer`/`system`; the UI grew a system toggle in each picker and a system
+grouping in the kit planner.
+
+What the research corrected (and why sourcing matters): a first pass assumed Cesaroni worked like
+AeroTech. It mostly doesn't. **Reusable hardware differs by diameter** — Pro38 reuses only the
+case (both closures ship in the reload), Pro24/29/54 reuse the case plus a rear closure, Pro75/98
+reuse the full set — so `forwardClosure`/`aftClosure` became optional on a case, and the shopping
+list and case summary adapt. The **cartridge** is self-contained (grains + liner + nozzle + forward
+disc preassembled), so the reload wording is system-aware. And the **spacer rule** is Cesaroni's
+own published one — *up to two spacers, one or two grain-sizes shorter* — which, being clean and
+sourced, is resolved for the standard Pro29/38/54 cases exactly like the RMS 38 mm chart; Pro24
+(no spacers), the 6GXL cases, and Pro75/98 stay advisory. Many Cesaroni reloads ship in both a
+delay and a plugged (`-P`) version, so the plugged/electronic-deployment flag earns its keep here.
 
 ### The kit planner (companion tool)
 

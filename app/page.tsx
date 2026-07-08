@@ -18,10 +18,10 @@ const JSON_LD = {
   operatingSystem: "Any",
   url: siteUrl,
   description:
-    "Motor-hardware compatibility for high-power rocketry. Match a reloadable AeroTech RMS case to " +
-    "the reloads it flies — directly or with spacers — the forward and aft closures each needs, " +
-    "the reload's certification status, and the complete hardware shopping list to fly. Works both " +
-    "directions: from a case, or from a reload.",
+    "Motor-hardware compatibility for high-power rocketry. Match a reloadable AeroTech RMS or " +
+    "Cesaroni Pro case to the reloads it flies — directly or with spacers — the closures each " +
+    "needs, the reload's certification status, and the complete hardware shopping list to fly. " +
+    "Works both directions: from a case, or from a reload.",
   featureList: [
     "Case → compatible reloads (direct and spacer fits)",
     "Reload → the cases and hardware to fly it",
@@ -76,10 +76,11 @@ export default function Page() {
       </div>
 
       <p className="mt-6 max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Covering the full <strong className="font-medium text-zinc-700 dark:text-zinc-300">AeroTech
-        RMS</strong> line — {caseCount} cases and {reloadCount} reloads across 24, 29, 38, and 54 mm.
-        Pick the case you own to see everything it flies, or search for a reload to see the hardware
-        it needs. Everything resolves to one clear shopping list, and each part links to its source.
+        Covering <strong className="font-medium text-zinc-700 dark:text-zinc-300">AeroTech RMS</strong>{" "}
+        and <strong className="font-medium text-zinc-700 dark:text-zinc-300">Cesaroni Pro</strong> —{" "}
+        {caseCount} cases and {reloadCount} reloads from 24 to 98 mm. Pick your system and the case
+        you own to see everything it flies, or search for a reload to see the hardware it needs.
+        Everything resolves to one clear shopping list, and each part links to its source.
       </p>
 
       <MusterApp />

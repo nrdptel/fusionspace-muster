@@ -7,11 +7,11 @@ Motor-hardware compatibility for high-power rocketry, at
 [muster.fusionspace.co](https://muster.fusionspace.co).
 
 Reloadable motor hardware is a graph, and it's easy to get lost in it: a case fits some
-reloads directly and others only with spacers, each reload needs the right forward and aft
-closures, and a few need a seal disc or a plugged closure. Muster makes that graph
-interactive. Tell it a case you own and it shows every reload it can fly — directly or with
-spacers — each reload's certification, and the complete list of reusable hardware to buy.
-Or start from a reload and it works back to the cases and hardware that fly it.
+reloads directly and others only with spacers, each reload needs the right closures, and a few
+need a seal disc or a plugged closure. Muster makes that graph interactive across **AeroTech
+RMS** and **Cesaroni Pro**. Tell it a case you own and it shows every reload it can fly —
+directly or with spacers — each reload's certification, and the complete list of reusable
+hardware to buy. Or start from a reload and it works back to the cases and hardware that fly it.
 
 **Muster is a shopping aid, not an assembly guide. The reload's own printed instructions are
 always the authority on the hardware it needs** — build to them, and confirm every part with
@@ -44,9 +44,11 @@ adapters you own and it counts every reload your kit already flies, then ranks t
 purchase that unlocks the most more — and it won't suggest a case whose reloads you can already
 reach with a spacer. Your kit stays on the device, nothing uploaded.
 
-Scope today is the full **AeroTech RMS** line — 24, 29, 38, and 54 mm — which is the messiest
-and most-asked corner of the hobby. The 38 mm Reload Adapter System spacer chart is resolved
-exactly; the model leaves clean room for CTI Pro and cross-brand work later.
+Scope today is **AeroTech RMS** (24–54 mm) and **Cesaroni Pro** (24–98 mm) — the two systems
+most high-power flyers actually own. Choose the system with one toggle; the hardware never
+interchanges across brands, and Muster won't let a result cross that line. Spacer fits are
+resolved where the manufacturer publishes the rule (AeroTech 38 mm, Cesaroni Pro29/38/54) and
+flagged as an advisory elsewhere. Cross-brand certification is a natural next step.
 
 - **Certification as a dimension, not a checkbox** — each reload carries its certifying body
   (NAR / Tripoli) or a caution when none is listed, and out-of-production is shown as its own
@@ -69,13 +71,16 @@ Two halves meet in a small resolver:
   certification — is a static mirror of [ThrustCurve](https://www.thrustcurve.org)
   (`lib/data/reloads.json`), and the reload → case mapping is ThrustCurve's own per-motor
   case field.
-- The **hardware graph** — cases, closures, seal-disc rules, and the AeroTech Reload Adapter
-  System spacer table — is curated in `lib/data/hardware.ts`, with a source on every node.
+- The **hardware graph** — cases, closures, seal-disc rules, and spacer rules — is curated by
+  hand: `lib/data/hardware.ts` for AeroTech RMS and `lib/data/hardware-cti.ts` for Cesaroni Pro,
+  with a source on every node. Cases, closures, and adapters all carry their manufacturer, and a
+  Cesaroni reload can never resolve to AeroTech hardware.
 
-Spacer compatibility is resolved only for 38 mm, whose case lengths step by exactly one grain
-and whose full spacer chart AeroTech publishes; 29 mm and 54 mm carry an advisory instead of
-a fabricated step. The resolver (`lib/resolve.ts`) is pure and tested, and the graph fails the
-build on a dangling reference, because a wrong edge here is a safety problem, not a typo.
+Spacer compatibility is resolved only where the manufacturer publishes the rule — AeroTech
+38 mm (its full spacer chart) and Cesaroni Pro29/38/54 (up to two spacers, one or two grain
+sizes shorter). Everywhere else it's a sourced advisory rather than a fabricated step. The
+resolver (`lib/resolve.ts`) is pure and tested, and the graph fails the build on a dangling
+reference, because a wrong edge here is a safety problem, not a typo.
 
 ## Running locally
 

@@ -63,6 +63,7 @@ export const ADAPTERS: AdapterSystem[] = [
     id: "ras-38",
     designation: "38RAS",
     name: "38 mm Reload Adapter System",
+    manufacturer: "AeroTech",
     diameter: 38,
     partNumber: "60222",
     contents: [
@@ -91,6 +92,7 @@ export const ADAPTERS: AdapterSystem[] = [
     id: "ras-29",
     designation: "29RAS",
     name: "29 mm Reload Adapter System",
+    manufacturer: "AeroTech",
     diameter: 29,
     contents: [
       "Floating forward closure (29FFC)",
@@ -106,6 +108,7 @@ export const ADAPTERS: AdapterSystem[] = [
     id: "ras-54",
     designation: "54RAS",
     name: "54 mm Reload Adapter System",
+    manufacturer: "AeroTech",
     diameter: 54,
     contents: [
       "Floating forward closure (54FFCS)",

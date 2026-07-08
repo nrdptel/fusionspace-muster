@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { allAdapters, allCases, diameters } from "@/lib/graph";
+import { allAdapters, allCases, diametersFor, manufacturers, SYSTEM_LABEL } from "@/lib/graph";
 import { coverageFor, unlockSuggestions, type OwnedKit } from "@/lib/resolve";
 
 const KEY = "muster.kit";
@@ -77,62 +77,71 @@ export default function KitPlanner() {
         one purchase that unlocks the most more. It stays on your device — nothing is uploaded.
       </p>
 
-      {/* Owned-hardware selectors, by diameter. */}
-      <div className="mt-5 space-y-4">
-        {diameters().map((d) => {
-          const dCases = cases.filter((c) => c.diameter === d);
-          const dAdapters = adapters.filter((a) => a.diameter === d);
-          return (
-            <fieldset key={d} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-              <legend className="px-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {d} mm
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {dCases.map((c) => {
-                  const on = view.caseIds.includes(c.id);
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggleCase(c.id)}
-                      className={
-                        "rounded-lg border px-2.5 py-1.5 font-mono text-xs font-medium transition " +
-                        (on
-                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                          : "border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-indigo-500/60")
-                      }
-                    >
-                      {on ? "✓ " : ""}
-                      {c.designation}
-                    </button>
-                  );
-                })}
-                {dAdapters.map((a) => {
-                  const on = view.adapterIds.includes(a.id);
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggleAdapter(a.id)}
-                      title={a.name}
-                      className={
-                        "rounded-lg border px-2.5 py-1.5 text-xs font-medium transition " +
-                        (on
-                          ? "border-indigo-500/60 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
-                          : "border-dashed border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-indigo-500/60")
-                      }
-                    >
-                      {on ? "✓ " : "+ "}
-                      {a.designation} adapter
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
-          );
-        })}
+      {/* Owned-hardware selectors, grouped by system then diameter. */}
+      <div className="mt-5 space-y-6">
+        {manufacturers().map((mfr) => (
+          <div key={mfr}>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              {SYSTEM_LABEL[mfr]}
+            </p>
+            <div className="space-y-3">
+              {diametersFor(mfr).map((d) => {
+                const dCases = cases.filter((c) => c.manufacturer === mfr && c.diameter === d);
+                const dAdapters = adapters.filter((a) => a.manufacturer === mfr && a.diameter === d);
+                return (
+                  <fieldset key={d} className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+                    <legend className="px-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      {d} mm
+                    </legend>
+                    <div className="flex flex-wrap gap-2">
+                      {dCases.map((c) => {
+                        const on = view.caseIds.includes(c.id);
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() => toggleCase(c.id)}
+                            className={
+                              "rounded-lg border px-2.5 py-1.5 font-mono text-xs font-medium transition " +
+                              (on
+                                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                : "border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-indigo-500/60")
+                            }
+                          >
+                            {on ? "✓ " : ""}
+                            {c.designation}
+                          </button>
+                        );
+                      })}
+                      {dAdapters.map((a) => {
+                        const on = view.adapterIds.includes(a.id);
+                        return (
+                          <button
+                            key={a.id}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() => toggleAdapter(a.id)}
+                            title={a.name}
+                            className={
+                              "rounded-lg border px-2.5 py-1.5 text-xs font-medium transition " +
+                              (on
+                                ? "border-indigo-500/60 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300"
+                                : "border-dashed border-zinc-300 bg-white text-zinc-600 hover:border-indigo-400 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:border-indigo-500/60")
+                            }
+                          >
+                            {on ? "✓ " : "+ "}
+                            {a.designation}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {ownedCount === 0 ? (

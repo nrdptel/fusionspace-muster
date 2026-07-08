@@ -137,8 +137,8 @@ describe("shoppingList", () => {
     const c = requireCase("RMS-38/360");
     const r = reloadsForCase("RMS-38/240")[0]; // flown in 38/360 with 1 spacer
     const list = shoppingList(c, r, "adapter", 1);
-    expect(list.reusable.some((i) => i.name.includes("38RAS"))).toBe(true);
-    expect(list.notes.some((n) => n.toLowerCase().includes("spacer"))).toBe(true);
+    expect(list.reusable.some((i) => i.name.includes("Reload Adapter System"))).toBe(true);
+    expect(list.notes.some((n) => n.includes("38RAS") && n.toLowerCase().includes("spacer"))).toBe(true);
   });
 
   it("flags a plugged reload as electronic-deployment only", () => {
@@ -174,6 +174,73 @@ describe("labels", () => {
     expect(certLabel(r)).toBe("TRA certified");
     const unlisted = allReloads().find((x) => x.certOrg === null);
     if (unlisted) expect(certLabel(unlisted)).toBe("Certification unlisted");
+  });
+});
+
+describe("Cesaroni Pro — the second system", () => {
+  it("resolves a Pro case to its cartridge reloads and its spacer fits (max 2, 1–2 sizes down)", () => {
+    const c = caseByDesignation("Pro38-3G");
+    expect(c?.manufacturer).toBe("Cesaroni");
+    const res = resolveCase(c!);
+    expect(res.native.length).toBeGreaterThan(0);
+    expect(res.native.every((f) => f.reload.manufacturer === "Cesaroni")).toBe(true);
+    // Cesaroni's published rule: a 3G case flies 2G with 1 spacer and 1G with 2 spacers.
+    expect(res.adapterAdvisory).toBe(false);
+    expect(res.viaAdapter.every((f) => f.spacers <= 2 && f.reload.manufacturer === "Cesaroni")).toBe(true);
+    expect(res.viaAdapter.some((f) => f.reload.caseInfo === "Pro38-2G" && f.spacers === 1)).toBe(true);
+    expect(res.viaAdapter.some((f) => f.reload.caseInfo === "Pro38-1G" && f.spacers === 2)).toBe(true);
+  });
+
+  it("never offers a spacer fit more than two grain-sizes shorter", () => {
+    const res = resolveCase(caseByDesignation("Pro38-6G")!);
+    const reached = new Set(res.viaAdapter.map((f) => f.reload.caseInfo));
+    expect(reached.has("Pro38-5G")).toBe(true); // 1 spacer
+    expect(reached.has("Pro38-4G")).toBe(true); // 2 spacers
+    expect(reached.has("Pro38-3G")).toBe(false); // 3 down — beyond the 2-spacer limit
+  });
+
+  it("Pro24 has no spacers, and Pro75 spacers are advisory", () => {
+    const p24 = resolveCase(caseByDesignation("Pro24-3G")!);
+    expect(p24.viaAdapter).toEqual([]);
+    expect(p24.adapterAdvisory).toBe(false);
+    const p75 = resolveCase(caseByDesignation("Pro75-4G")!);
+    expect(p75.adapterAdvisory).toBe(true);
+    expect(p75.viaAdapter).toEqual([]);
+  });
+
+  it("models the reusable hardware per diameter: Pro38 is case-only, Pro54 keeps a rear closure", () => {
+    const p38 = shoppingList(caseByDesignation("Pro38-3G")!, resolveCase(caseByDesignation("Pro38-3G")!).native[0].reload, "native", 0);
+    // Pro38: only the case is reusable — both closures ship in the reload.
+    expect(p38.reusable.length).toBe(1);
+    expect(p38.reusable[0].name).toContain("Pro38-3G case");
+    const p54case = caseByDesignation("Pro54-3G")!;
+    const p54 = shoppingList(p54case, resolveCase(p54case).native[0].reload, "native", 0);
+    expect(p54.reusable.some((i) => i.name.includes("rear closure"))).toBe(true);
+  });
+
+  it("never crosses systems: a Cesaroni reload resolves only to Cesaroni hardware", () => {
+    const ctiReloads = allReloads().filter((r) => r.manufacturer === "Cesaroni" && r.diameter === 38);
+    for (const r of ctiReloads.slice(0, 20)) {
+      const res = resolveReload(r);
+      const cases = [res.native, ...res.viaAdapter].filter(Boolean).map((f) => f!.motorCase);
+      expect(cases.every((c) => c.manufacturer === "Cesaroni")).toBe(true);
+    }
+  });
+
+  it("and an AeroTech reload resolves only to AeroTech hardware", () => {
+    const atReloads = allReloads().filter((r) => r.manufacturer === "AeroTech" && r.diameter === 38);
+    for (const r of atReloads.slice(0, 20)) {
+      const res = resolveReload(r);
+      const cases = [res.native, ...res.viaAdapter].filter(Boolean).map((f) => f!.motorCase);
+      expect(cases.every((c) => c.manufacturer === "AeroTech")).toBe(true);
+    }
+  });
+
+  it("describes a Cesaroni reload as a single-use cartridge in the shopping list", () => {
+    const r = allReloads().find((x) => x.manufacturer === "Cesaroni")!;
+    const list = shoppingList(caseByDesignation(r.caseInfo)!, r, "native", 0);
+    expect(list.consumable.name).toContain("cartridge");
+    expect(list.consumable.detail).toContain("preassembled");
   });
 });
 

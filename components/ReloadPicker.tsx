@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { allReloads, diameters } from "@/lib/graph";
+import type { Manufacturer } from "@/lib/data/types";
+import { allReloads, diametersFor, manufacturers, reloadById, SYSTEM_LABEL } from "@/lib/graph";
 import { formatImpulse, formatThrust, propLabel } from "@/lib/format";
 import { Segmented } from "./ui";
 import { SearchIcon } from "./icons";
 
-/** Pick a reload: a diameter filter and a text search over designation, class, and
- *  propellant. Results are capped with a count so the list stays glanceable. */
+/** Pick a reload: a motor system and diameter, then a text search over designation, class,
+ *  and propellant. Results are capped with a count so the list stays glanceable. */
 export default function ReloadPicker({
   value,
   onChange,
@@ -16,14 +17,25 @@ export default function ReloadPicker({
   onChange: (reloadId: string) => void;
 }) {
   const reloads = allReloads();
-  const dias = diameters();
-  const selected = reloads.find((r) => r.id === value);
-  const [dia, setDia] = useState<number>(selected?.diameter ?? 38);
+  const mfrs = manufacturers();
+  const selected = value ? reloadById(value) : undefined;
+  const [mfr, setMfr] = useState<Manufacturer>(selected?.manufacturer ?? "AeroTech");
+
+  const dias = diametersFor(mfr);
+  const selectedDia = selected && selected.manufacturer === mfr ? selected.diameter : undefined;
+  const [dia, setDia] = useState<number>(selectedDia ?? dias[dias.length >= 3 ? 2 : 0]);
   const [q, setQ] = useState("");
 
+  const changeMfr = (m: Manufacturer) => {
+    setMfr(m);
+    const d = diametersFor(m);
+    if (!d.includes(dia)) setDia(d[d.length >= 3 ? 2 : 0]);
+  };
+
+  const effectiveDia = dias.includes(dia) ? dia : dias[0];
   const needle = q.trim().toLowerCase();
   const matches = reloads.filter((r) => {
-    if (r.diameter !== dia) return false;
+    if (r.manufacturer !== mfr || r.diameter !== effectiveDia) return false;
     if (!needle) return true;
     return (
       r.designation.toLowerCase().includes(needle) ||
@@ -42,9 +54,21 @@ export default function ReloadPicker({
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           Which reload do you want to fly?
         </span>
+        {mfrs.length > 1 && (
+          <Segmented
+            ariaLabel="Motor system"
+            value={mfr}
+            onChange={(v) => changeMfr(v as Manufacturer)}
+            options={mfrs.map((m) => ({ value: m, label: SYSTEM_LABEL[m] }))}
+          />
+        )}
+      </div>
+
+      <div className="mt-3">
         <Segmented
           ariaLabel="Reload diameter"
-          value={String(dia)}
+          size="sm"
+          value={String(effectiveDia)}
           onChange={(v) => setDia(Number(v))}
           options={dias.map((d) => ({ value: String(d), label: `${d} mm` }))}
         />
@@ -56,7 +80,7 @@ export default function ReloadPicker({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search designation, class, or propellant — e.g. H128, I, Redline"
+          placeholder="Search designation, class, or propellant"
           aria-label="Search reloads"
           className="w-full bg-transparent px-3 py-2 text-sm outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
         />

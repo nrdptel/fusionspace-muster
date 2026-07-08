@@ -74,8 +74,30 @@ test("reload → cases, including a spacer fit that adds the adapter", async ({ 
   // Choosing the bigger case pulls the 38RAS adapter into the list, with a spacer note.
   await bigger.click();
   const list = page.locator("#shopping-list");
-  await expect(list.getByText("38RAS adapter", { exact: true })).toBeVisible();
+  await expect(list.getByText(/Reload Adapter System/)).toBeVisible();
   await expect(list.getByText(/spacer/i).first()).toBeVisible();
+});
+
+test("Cesaroni Pro: system toggle → case → cartridge shopping list", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  // Switch the case picker to the Cesaroni Pro system.
+  await page.getByRole("button", { name: "Cesaroni Pro" }).click();
+
+  // Pick a Pro38 3-grain case (the picker grid button; the kit planner also lists it, so first()).
+  await page.getByRole("button", { name: /Pro38-3G/ }).first().click();
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+
+  // Cesaroni's spacer rule resolves: a 3G case also flies 2G/1G reloads with spacers.
+  await expect(page.locator("#result").getByText(/Also flies with spacers/)).toBeVisible();
+  // Pro38 reuses only the case — both closures ship in the reload.
+  await expect(page.locator("#result").getByText(/The reload includes its closures/)).toBeVisible();
+
+  // Drill into the first (native) reload → the shopping list uses Cesaroni's cartridge wording.
+  await page.locator("#result").getByRole("button").first().click();
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText(/reload cartridge/)).toBeVisible();
+  await expect(list.getByText("Pro38-3G case", { exact: true })).toBeVisible();
 });
 
 test("a plugged reload is flagged as electronic-deployment only", async ({ page }) => {
