@@ -1,0 +1,160 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { allReloads, reloadById, SYSTEM_LABEL } from "@/lib/graph";
+import { resolveReload, certLabel, type CaseFit } from "@/lib/resolve";
+import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
+import { checkStockUrl } from "@/lib/links";
+import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
+import EntityFrame from "@/components/EntityFrame";
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return allReloads().map((r) => ({ id: r.id }));
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://muster.fusionspace.co";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const r = reloadById(id);
+  if (!r) return {};
+  const label = SYSTEM_LABEL[r.manufacturer];
+  const title = `${r.designation} — cases & hardware · Muster`;
+  const description =
+    `The ${label} cases that fly the ${r.designation} (class ${r.impulseClass}, ` +
+    `${formatImpulse(r.totImpulseNs)}), the closures and any spacers it needs, its ` +
+    `${certLabel(r).toLowerCase()} status, and the hardware to fly it.`;
+  const path = `/reload/${r.id}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { title, description, url: path, type: "website" },
+    twitter: { title, description },
+  };
+}
+
+export default async function ReloadPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const r = reloadById(id);
+  if (!r) notFound();
+
+  const res = resolveReload(r);
+  const label = SYSTEM_LABEL[r.manufacturer];
+  const toolHref = `/?have=reload&reload=${r.id}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Muster", item: `${siteUrl}/` },
+      { "@type": "ListItem", position: 2, name: r.designation, item: `${siteUrl}/reload/${r.id}` },
+    ],
+  };
+
+  const caseRow = (f: CaseFit) => (
+    <li key={`${f.motorCase.id}-${f.spacers}`}>
+      <Link
+        href={`/case/${f.motorCase.id}`}
+        className="block rounded-lg border border-zinc-200 bg-white px-3.5 py-3 transition hover:border-indigo-400 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-indigo-500/60"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <span className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {f.motorCase.designation}
+          </span>
+          <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-400">
+            {f.motorCase.diameter} mm{f.motorCase.partNumber ? ` · P/N ${f.motorCase.partNumber}` : ""}
+          </span>
+        </div>
+        <div className="mt-2">
+          <FitBadge fit={f.fit} spacers={f.spacers} adapter={f.adapter} />
+        </div>
+      </Link>
+    </li>
+  );
+
+  return (
+    <EntityFrame>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+
+      <nav aria-label="Breadcrumb" className="mt-6 text-xs text-zinc-500 dark:text-zinc-400">
+        <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400">Muster</Link>
+        <span aria-hidden className="mx-1.5">/</span>
+        <span className="text-zinc-700 dark:text-zinc-300">{r.designation}</span>
+      </nav>
+
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h1 className="font-mono text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          {r.designation}
+        </h1>
+        <span className="text-sm tabular-nums text-zinc-500 dark:text-zinc-400">
+          {formatImpulse(r.totImpulseNs)} · {formatThrust(r.avgThrustN)} avg
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        {label} · class {r.impulseClass} · {propLabel(r)} · delay {formatDelays(r)} · built for the{" "}
+        {res.native ? (
+          <Link href={`/case/${res.native.motorCase.id}`} className="font-mono text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+            {r.caseInfo}
+          </Link>
+        ) : (
+          <span className="font-mono text-zinc-700 dark:text-zinc-300">{r.caseInfo}</span>
+        )}{" "}
+        case
+      </p>
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <CertBadge reload={r} />
+        <PluggedBadge reload={r} />
+        <SparkyBadge reload={r} />
+        <AvailabilityBadge reload={r} />
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <Link
+          href={toolHref}
+          className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
+        >
+          Open in the interactive tool
+          <span aria-hidden>→</span>
+        </Link>
+        <a
+          href={checkStockUrl(r)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+        >
+          Check stock &amp; pricing
+          <span aria-hidden>↗</span>
+        </a>
+      </div>
+
+      <p className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
+        <strong className="font-semibold">Muster is a shopping aid, not an assembly guide.</strong>{" "}
+        Build only to the reload&apos;s printed instructions — always the authority — and confirm
+        every part with the manufacturer before you buy or fly.
+      </p>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
+          Cases that fly it
+        </h2>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          Its own case is the simplest; a longer case flies it too, with the adapter and spacers.
+        </p>
+        {res.native || res.viaAdapter.length > 0 ? (
+          <ul className="mt-3 grid list-none gap-2 sm:grid-cols-2">
+            {res.native && caseRow(res.native)}
+            {res.viaAdapter.map(caseRow)}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            No case is listed for this reload in the current data.
+          </p>
+        )}
+      </section>
+    </EntityFrame>
+  );
+}

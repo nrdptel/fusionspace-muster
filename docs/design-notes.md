@@ -179,6 +179,20 @@ direct and spacer groups with an "X of Y" count. It mirrors the Motor Finder's f
 the logic is a pure tested helper (`lib/filter.ts`), and the filter is transient view state (reset
 per case via a React key) rather than part of the shareable URL selection.
 
+### Deep-linkable case and reload pages
+
+The interactive tool keeps its whole selection in the query string, which is great for sharing but
+invisible to search: only the home page was ever in the sitemap. So every case and every reload now
+also has its own **statically-generated page** — `app/case/[id]` and `app/reload/[id]`, one HTML file
+each via `generateStaticParams` (≈630 pages, still a pure `output: "export"` — no server). Each page
+server-renders the real resolved content (a case's reloads and hardware; a reload's cases, cert, and
+the stock cross-link), carries its own `title`/description/canonical and a `BreadcrumbList`, and
+cross-links its neighbours — a case page links to each reload's page and back — so the whole graph is
+crawlable from the sitemap, which now lists them all. Every page leads with a CTA into the interactive
+tool (the existing `?have=…` deep link), so search traffic lands on a real answer and can open the
+live version. It mirrors the Motor Finder's per-motor pages, and the entity — not "Muster" — is each
+page's `h1`. A `sitemap.test.ts` holds the sitemap to the data, so a new entity can't ship undiscoverable.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the

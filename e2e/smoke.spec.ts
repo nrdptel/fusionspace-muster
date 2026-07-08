@@ -140,6 +140,37 @@ test("Loki Research: system toggle → case → native-only shopping list with b
   );
 });
 
+test("deep-linked case page: static content, cross-links to reloads, and a CTA into the tool", async ({ page }) => {
+  await page.goto("/case/rms-38-360", { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByRole("heading", { level: 1, name: "RMS-38/360" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+
+  // A reload it flies links to that reload's own page.
+  const reloadLink = page.getByRole("link", { name: /I161W/ }).first();
+  await expect(reloadLink).toHaveAttribute("href", "/reload/at-i161w");
+
+  // The CTA opens the interactive tool with this case pre-selected.
+  await page.getByRole("link", { name: /Open in the interactive tool/ }).click();
+  await expect(page).toHaveURL(/have=case&case=rms-38-360/);
+  await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
+});
+
+test("deep-linked reload page: cases that fly it link back, plus the stock cross-link", async ({ page }) => {
+  await page.goto("/reload/at-i161w", { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cases that fly it" })).toBeVisible();
+
+  // Its own case links to that case's page.
+  await expect(page.getByRole("link", { name: /RMS-38\/360/ }).first()).toHaveAttribute("href", "/case/rms-38-360");
+  // The Motor Finder cross-link is present with the right target.
+  await expect(page.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+    "href",
+    "https://motor.fusionspace.co/motor/aerotech/I161W",
+  );
+});
+
 test("a busy case's reloads can be filtered and sorted", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /RMS-38\/360/ }).first().click();

@@ -59,6 +59,9 @@ reloads are direct-fit only. Cross-brand certification is a natural next step.
   graph (cases, closures, seal-disc rules, the 38RAS spacer chart) is curated by hand from
   the manufacturer's published hardware, and every part and rule cites its source in the repo.
 - **Shareable** — the whole selection lives in the URL, so a resolved view is a link.
+- **A page for every case and reload** — each has its own static, deep-linkable page (`/case/…`,
+  `/reload/…`) with the reloads or cases it works with, cross-linked and in the sitemap, so it's
+  findable in search and shareable on its own — each leading back into the interactive tool.
 - **Private by default** — everything runs in your browser. No account, no server, no
   analytics or tracking of any kind.
 - Installable, and works **offline** once loaded — the whole dataset ships with the page, so
