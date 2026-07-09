@@ -8,6 +8,7 @@ import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadCases from "@/components/CrossloadCases";
 import EntityFrame from "@/components/EntityFrame";
+import { reloadJsonLd } from "@/lib/jsonld";
 
 export const dynamicParams = false;
 
@@ -49,14 +50,7 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
   // question on its own; the tool has the copyable list and any spacer-fit variants.
   const nativeList = res.native ? shoppingList(res.native.motorCase, r, "native", 0) : null;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Muster", item: `${siteUrl}/` },
-      { "@type": "ListItem", position: 2, name: r.designation, item: `${siteUrl}/reload/${r.id}` },
-    ],
-  };
+  const jsonLd = reloadJsonLd(r, siteUrl);
 
   const caseRow = (f: CaseFit) => (
     <li key={`${f.motorCase.id}-${f.spacers}`}>

@@ -7,6 +7,7 @@ import { formatImpulse, formatThrust, propLabel } from "@/lib/format";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadReloads from "@/components/CrossloadReloads";
 import EntityFrame from "@/components/EntityFrame";
+import { caseJsonLd } from "@/lib/jsonld";
 
 // Every case id is known at build time; anything else 404s (no on-demand rendering on a
 // static export).
@@ -53,14 +54,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const label = SYSTEM_LABEL[c.manufacturer];
   const toolHref = `/?have=case&case=${c.id}`;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Muster", item: `${siteUrl}/` },
-      { "@type": "ListItem", position: 2, name: `${c.designation} case`, item: `${siteUrl}/case/${c.id}` },
-    ],
-  };
+  const jsonLd = caseJsonLd(c, siteUrl);
 
   const reloadRow = (f: ReloadFit) => (
     <li key={`${f.reload.id}-${f.spacers}`}>
