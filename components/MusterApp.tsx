@@ -76,6 +76,34 @@ export default function MusterApp() {
         ? `/reload/${selectedReload.id}`
         : undefined;
 
+  // A concise, screen-reader-only summary of what just changed, announced politely. Selecting a
+  // case or reload swaps a whole result panel and shopping list into the page with no visible
+  // scroll or focus move — a sighted user sees it, but without this a screen-reader user is told
+  // nothing. Automated axe checks can't catch a missing announcement (the markup is valid either
+  // way), so it's an easy gap to leave open. The message stays terse: a count, not the whole list.
+  let announce = "";
+  if (mounted) {
+    if (state.mode === "case" && selectedCase) {
+      const pickedReload = state.pick ? reloadById(state.pick) : undefined;
+      if (pickedReload && list) {
+        announce = `Shopping list ready: ${pickedReload.designation} in the ${selectedCase.designation} case.`;
+      } else {
+        const n = resolveCase(selectedCase);
+        const count = n.native.length + n.viaAdapter.length;
+        announce = `${selectedCase.designation} case selected. ${count} reload${count === 1 ? "" : "s"} it can fly.`;
+      }
+    } else if (state.mode === "reload" && selectedReload) {
+      const pickedCase = state.pick ? caseById(state.pick) : undefined;
+      if (pickedCase && list) {
+        announce = `Shopping list ready: ${selectedReload.designation} in the ${pickedCase.designation} case.`;
+      } else {
+        const res = resolveReload(selectedReload);
+        const count = (res.native ? 1 : 0) + res.viaAdapter.length;
+        announce = `${selectedReload.designation} reload selected. ${count} case${count === 1 ? "" : "s"} fly it.`;
+      }
+    }
+  }
+
   // Render a stable shell until mounted so the first client paint matches the server HTML
   // (URL-derived selection is applied after hydration).
   const view = mounted ? state : ({ mode: "case" } as AppState);
@@ -121,6 +149,12 @@ export default function MusterApp() {
         ) : (
           <ReloadPicker value={view.reloadId} onChange={setReload} />
         )}
+      </div>
+
+      {/* Persistent polite live region: always in the DOM so a change to its text is announced.
+          Visually hidden — sighted users already see the result appear. */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {announce}
       </div>
 
       <div id="result">
