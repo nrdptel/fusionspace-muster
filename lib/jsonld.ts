@@ -51,8 +51,33 @@ function breadcrumb(siteUrl: string, name: string, path: string) {
   };
 }
 
-/** The `@graph` (Product + BreadcrumbList) for a reload's deep-link page. */
-export function reloadJsonLd(r: Reload, siteUrl: string = DEFAULT_SITE) {
+/** A related entity to link in an ItemList — a case a reload flies in, or a reload a case flies. */
+export interface RelatedEntity {
+  id: string;
+  name: string;
+}
+
+/** A schema.org ItemList linking to the detail pages this page lists. The case page IS a list of
+ *  the reloads it flies, and the reload page a list of the cases that fly it — this marks up that
+ *  primary content the way Google recommends for a summary-of-links page (ListItem `url`, not an
+ *  inline `item`). */
+function itemList(name: string, siteUrl: string, kind: "case" | "reload", items: RelatedEntity[]) {
+  return {
+    "@type": "ItemList",
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `${siteUrl}/${kind}/${it.id}`,
+      name: it.name,
+    })),
+  };
+}
+
+/** The `@graph` (Product + BreadcrumbList, plus an ItemList of the cases that fly it) for a
+ *  reload's deep-link page. */
+export function reloadJsonLd(r: Reload, siteUrl: string = DEFAULT_SITE, casesThatFlyIt: RelatedEntity[] = []) {
   const url = `${siteUrl}/reload/${r.id}`;
   const brand = BRAND[r.manufacturer];
   const description =
@@ -79,14 +104,16 @@ export function reloadJsonLd(r: Reload, siteUrl: string = DEFAULT_SITE) {
     ].filter((p): p is PropertyValue => p !== null),
   };
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [product, breadcrumb(siteUrl, r.designation, `/reload/${r.id}`)],
-  };
+  const graph: Record<string, unknown>[] = [product, breadcrumb(siteUrl, r.designation, `/reload/${r.id}`)];
+  if (casesThatFlyIt.length > 0) {
+    graph.push(itemList(`Cases that fly the ${r.designation}`, siteUrl, "case", casesThatFlyIt));
+  }
+  return { "@context": "https://schema.org", "@graph": graph };
 }
 
-/** The `@graph` (Product + BreadcrumbList) for a case's deep-link page. */
-export function caseJsonLd(c: MotorCase, siteUrl: string = DEFAULT_SITE) {
+/** The `@graph` (Product + BreadcrumbList, plus an ItemList of the reloads it flies) for a case's
+ *  deep-link page. */
+export function caseJsonLd(c: MotorCase, siteUrl: string = DEFAULT_SITE, reloadsItFlies: RelatedEntity[] = []) {
   const url = `${siteUrl}/case/${c.id}`;
   const brand = BRAND[c.manufacturer];
   const description =
@@ -113,8 +140,9 @@ export function caseJsonLd(c: MotorCase, siteUrl: string = DEFAULT_SITE) {
     ].filter((p): p is PropertyValue => p !== null),
   };
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [product, breadcrumb(siteUrl, `${c.designation} case`, `/case/${c.id}`)],
-  };
+  const graph: Record<string, unknown>[] = [product, breadcrumb(siteUrl, `${c.designation} case`, `/case/${c.id}`)];
+  if (reloadsItFlies.length > 0) {
+    graph.push(itemList(`Reloads the ${c.designation} case flies`, siteUrl, "reload", reloadsItFlies));
+  }
+  return { "@context": "https://schema.org", "@graph": graph };
 }

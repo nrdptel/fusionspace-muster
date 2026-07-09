@@ -54,7 +54,13 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const label = SYSTEM_LABEL[c.manufacturer];
   const toolHref = `/?have=case&case=${c.id}`;
 
-  const jsonLd = caseJsonLd(c, siteUrl);
+  // The reloads this case flies (direct + spacer), deduped by id — a longer case can list a reload
+  // at both one and two spacers, but it's one entry in the structured-data list. Crossloads stay
+  // out: they're a separate cautioned section, not a resolved fit.
+  const fliesById = new Map<string, string>();
+  for (const f of [...res.native, ...res.viaAdapter]) fliesById.set(f.reload.id, f.reload.designation);
+  const fliesReloads = [...fliesById].map(([id, name]) => ({ id, name }));
+  const jsonLd = caseJsonLd(c, siteUrl, fliesReloads);
 
   const reloadRow = (f: ReloadFit) => (
     <li key={`${f.reload.id}-${f.spacers}`}>
