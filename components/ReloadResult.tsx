@@ -5,6 +5,7 @@ import { resolveReload, type CaseFit } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { AvailabilityBadge, CertBadge, FitBadge, PluggedBadge, SparkyBadge } from "./badges";
+import CrossloadCases from "./CrossloadCases";
 
 /** The result for "I want to fly this reload": the reload's spec and certification, then the
  *  cases that can fly it — its own case, and any longer case that reaches it with spacers. */
@@ -104,6 +105,8 @@ export default function ReloadResult({
           </p>
         )}
       </section>
+
+      <CrossloadCases fits={res.crossload} />
     </div>
   );
 }

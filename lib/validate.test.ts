@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { validateGraph, type GraphInput } from "./validate";
+import { validateGraph, validateCrossloads, type GraphInput } from "./validate";
 import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
 import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
 import { LOKI_CASES, LOKI_PARTS } from "./data/hardware-loki";
+import { CROSSLOAD_PAIRS } from "./data/crossload";
 import reloadsDoc from "./data/reloads.json";
 import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
 
@@ -103,6 +104,27 @@ describe("validateGraph — the real merged graph", () => {
       reloads: (reloadsDoc as { reloads: Reload[] }).reloads,
     };
     expect(() => validateGraph(input)).not.toThrow();
+  });
+});
+
+describe("validateCrossloads", () => {
+  const CASES = [...RMS_CASES, ...CTI_CASES, ...LOKI_CASES];
+
+  it("passes for the real crossload pairs", () => {
+    expect(() => validateCrossloads(CROSSLOAD_PAIRS, CASES)).not.toThrow();
+  });
+
+  it("rejects a pair naming an unknown case", () => {
+    expect(() => validateCrossloads([{ rms: "RMS-98/9999", pro: "Pro98-2G", diameter: 98 }], CASES)).toThrow(/unknown AeroTech case/);
+  });
+
+  it("rejects a pair with the brands swapped", () => {
+    // "Pro98-2G" as the rms slot is a Cesaroni case, not AeroTech.
+    expect(() => validateCrossloads([{ rms: "Pro98-2G", pro: "RMS-98/5120", diameter: 98 }], CASES)).toThrow(/not an AeroTech case/);
+  });
+
+  it("rejects a crossload at a non-75/98 diameter", () => {
+    expect(() => validateCrossloads([{ rms: "RMS-38/360", pro: "Pro38-3G", diameter: 38 as unknown as 75 }], CASES)).toThrow(/only 75\/98/);
   });
 });
 

@@ -165,6 +165,33 @@ a shopping aid shouldn't point you at hardware you can't purchase. Loki's build-
 same one every system passes (`lib/validate.ts`), and a Loki reload can no more resolve to AeroTech
 or Cesaroni hardware than the reverse.
 
+### Cross-brand crossloads (the one exception to the brand wall)
+
+The whole graph is built on the rule that hardware never crosses brands — the resolver's
+same-manufacturer guard, and a build-time check that no edge crosses it. There is exactly one
+sanctioned exception, and it only exists because the manufacturers publish it: at **75 mm and
+98 mm**, AeroTech RMS and Cesaroni Pro are deliberately cross-compatible. Cesaroni engineered its
+Pro75/98 reloads to share the RMS case ID and closure engagement, publishes an exact case-size
+equivalence table (Pro75-2G ≡ RMS-75/2560 … Pro98-6G ≡ RMS-98/15360), and ships the o-rings for
+either brand; AeroTech certified its own 75/98 reloads for Cesaroni hardware ("AT Crossloads").
+
+`lib/data/crossload.ts` holds those ten sourced pairs and nothing else — no 29/38/54 mm, where
+nobody sanctions it and the closure formats differ (that's a CATO edge, not a feature). The
+resolver adds a `crossload` list to each resolution by looking up the paired foreign case; the UI
+renders it as a distinct **amber caution**, never a green fit, and — crucially — the two directions
+carry *different* manufacturer notes: an AeroTech reload in a Cesaroni case is AeroTech's sanctioned
+crossload (Medusa nozzles need a single-throat swap), while a Cesaroni reload in an RMS case is
+something AeroTech formally *advises against* (needs an added forward seal disc, no warranty). Both
+carry the cert caveat. `validateCrossloads` fails the build if a pair names a missing case, the wrong
+brand, or a diameter other than 75/98. Sourced from Cesaroni's FAQ + Pro75 instructions and
+AeroTech's crossload announcement and advisory — the research that turned up the AeroTech advisory
+is why the two directions aren't shown as symmetric.
+
+The deferred, still-sourced neighbours (noted for later): the Cesaroni Pro75→AMW75 adapter (needs
+AMW hardware added first), Loki's 98 mm liner sets for foreign cases (no published reload-level
+recipe), and RouseTech / Dr. Rocket as RMS aliases (licensed, but community-attested rather than a
+crisp manufacturer statement).
+
 ### The kit planner (companion tool)
 
 The lookup answers "given X, what fits?"; the planner answers "given everything I own, what can
