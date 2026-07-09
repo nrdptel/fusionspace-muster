@@ -19,6 +19,12 @@ test("kit planner: coverage grows with owned hardware, and persists", async ({ p
   // It suggests the next purchase.
   await expect(kit.getByRole("heading", { name: "Unlock more" })).toBeVisible();
 
+  // The flyable reloads are browsable, each linking to its own page.
+  await kit.getByText(/Show all 21 flyable reloads/).click();
+  const i161 = kit.getByRole("link", { name: /I161W/ });
+  await expect(i161).toBeVisible();
+  await expect(i161).toHaveAttribute("href", "/reload/at-i161w");
+
   // Persists across a reload (localStorage).
   await page.reload({ waitUntil: "networkidle" });
   await expect(page.locator("#kit").getByText(/21\s*reloads/)).toBeVisible();
