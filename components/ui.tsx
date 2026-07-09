@@ -7,7 +7,10 @@ export interface Option<T extends string> {
   label: string;
 }
 
-/** A small segmented toggle, used for mode / deploy / unit switches. */
+/** A small segmented single-select, used for the mode / system / diameter / sort switches.
+ *  A true radio group: one tab stop, arrow keys move the selection, Home/End jump to the
+ *  ends — the WAI-ARIA pattern, so screen readers announce "radio, checked, N of M" and
+ *  keyboard users don't tab through every option. */
 export function Segmented<T extends string>({
   value,
   onChange,
@@ -22,19 +25,60 @@ export function Segmented<T extends string>({
   size?: "sm" | "md";
 }) {
   const pad = size === "sm" ? "px-2 py-0.5 text-xs" : "px-3 py-1 text-sm";
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  const selected = options.findIndex((o) => o.value === value);
+
+  const select = (i: number) => {
+    const next = ((i % options.length) + options.length) % options.length;
+    onChange(options[next].value);
+    refs.current[next]?.focus();
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const from = selected < 0 ? 0 : selected;
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        e.preventDefault();
+        select(from + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        e.preventDefault();
+        select(from - 1);
+        break;
+      case "Home":
+        e.preventDefault();
+        select(0);
+        break;
+      case "End":
+        e.preventDefault();
+        select(options.length - 1);
+        break;
+    }
+  };
+
   return (
     <div
-      role="group"
+      role="radiogroup"
       aria-label={ariaLabel}
+      onKeyDown={onKeyDown}
       className="inline-flex rounded-lg border border-zinc-300 bg-zinc-100 p-0.5 dark:border-zinc-700 dark:bg-zinc-900"
     >
-      {options.map((o) => {
+      {options.map((o, i) => {
         const active = o.value === value;
         return (
           <button
             key={o.value}
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
             type="button"
-            aria-pressed={active}
+            role="radio"
+            aria-checked={active}
+            // Roving tabindex: only the checked option is in the tab order (fall back to the
+            // first when nothing is selected, so the group can never trap focus out).
+            tabIndex={active || (selected < 0 && i === 0) ? 0 : -1}
             onClick={() => onChange(o.value)}
             className={
               "rounded-md font-medium transition " +
