@@ -28,6 +28,18 @@ export function isNarrowing(f: ReloadFilter): boolean {
   return f.propellant !== "" || f.inProductionOnly;
 }
 
+/**
+ * Bare reloads by ascending total impulse, with the designation as a stable tiebreak — the same
+ * order the case-result view uses (see `applyFilter`). The reload picker sorts its search results
+ * with this so the list is consistently scannable low-to-high, rather than riding on whatever order
+ * the ThrustCurve mirror happens to carry. Pure; does not mutate the input.
+ */
+export function byImpulse(reloads: Reload[]): Reload[] {
+  return [...reloads].sort(
+    (a, b) => a.totImpulseNs - b.totImpulseNs || a.designation.localeCompare(b.designation),
+  );
+}
+
 function keep(r: Reload, f: ReloadFilter): boolean {
   if (f.propellant && r.propName !== f.propellant) return false;
   if (f.inProductionOnly && r.availability === "OOP") return false;

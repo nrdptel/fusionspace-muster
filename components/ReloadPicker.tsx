@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Manufacturer } from "@/lib/data/types";
 import { allReloads, diametersFor, manufacturers, reloadById, SYSTEM_LABEL } from "@/lib/graph";
 import { formatImpulse, formatThrust, propLabel } from "@/lib/format";
+import { byImpulse } from "@/lib/filter";
 import { Segmented } from "./ui";
 import { SearchIcon } from "./icons";
 
@@ -34,16 +35,18 @@ export default function ReloadPicker({
 
   const effectiveDia = dias.includes(dia) ? dia : dias[0];
   const needle = q.trim().toLowerCase();
-  const matches = reloads.filter((r) => {
-    if (r.manufacturer !== mfr || r.diameter !== effectiveDia) return false;
-    if (!needle) return true;
-    return (
-      r.designation.toLowerCase().includes(needle) ||
-      r.commonName.toLowerCase().includes(needle) ||
-      (r.propName ?? "").toLowerCase().includes(needle) ||
-      r.impulseClass.toLowerCase() === needle
-    );
-  });
+  const matches = byImpulse(
+    reloads.filter((r) => {
+      if (r.manufacturer !== mfr || r.diameter !== effectiveDia) return false;
+      if (!needle) return true;
+      return (
+        r.designation.toLowerCase().includes(needle) ||
+        r.commonName.toLowerCase().includes(needle) ||
+        (r.propName ?? "").toLowerCase().includes(needle) ||
+        r.impulseClass.toLowerCase() === needle
+      );
+    }),
+  );
 
   const CAP = 60;
   const capped = matches.slice(0, CAP);

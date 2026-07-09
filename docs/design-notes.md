@@ -258,6 +258,11 @@ direct and spacer groups with an "X of Y" count. It mirrors the Motor Finder's f
 the logic is a pure tested helper (`lib/filter.ts`), and the filter is transient view state (reset
 per case via a React key) rather than part of the shareable URL selection.
 
+The "I have a reload" **search picker** shares that ordering: its results run low-to-high by total
+impulse (`byImpulse` in the same `lib/filter.ts`), so a diameter's reloads read H → I → J → K rather
+than riding on whatever order the ThrustCurve mirror happens to carry — one consistent, scannable
+order everywhere reloads are listed. An e2e test asserts the rendered picker order stays ascending.
+
 ### Deep-linkable case and reload pages
 
 The interactive tool keeps its whole selection in the query string, which is great for sharing but
