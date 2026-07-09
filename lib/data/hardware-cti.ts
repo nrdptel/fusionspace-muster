@@ -129,7 +129,7 @@ export const CTI_ADAPTERS: AdapterSystem[] = [
 // closures. Pro24/29/54 reuse a rear closure but ship the forward closure in the reload, which the
 // summary doesn't convey, so those carry a note.
 const REAR_ONLY_NOTE = "The forward closure ships with the reload; you reuse the case and the rear closure.";
-const XL_NOTE = "This longer 6GXL case also flies 6G and 5G reloads with an XL spacer — confirm the exact spacer setup against Cesaroni's instructions.";
+const XL_NOTE = "This longer 6GXL case also flies 6G and 5G reloads with a case spacer (a regular spacer on Pro29; an XL spacer on Pro38/54) — confirm the exact spacer setup against Cesaroni's instructions.";
 
 function buildCtiCases(): MotorCase[] {
   const cases: MotorCase[] = [];
