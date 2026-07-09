@@ -139,6 +139,12 @@ test("reload → cases, including a spacer fit that adds the adapter", async ({ 
   );
   await expect(stockLink).toHaveAttribute("target", "_blank");
 
+  // …and to ThrustCurve for the motor's own specs and thrust curve (provenance).
+  await expect(page.locator("#result").getByRole("link", { name: /View on ThrustCurve/ })).toHaveAttribute(
+    "href",
+    "https://www.thrustcurve.org/motors/AeroTech/I161W/",
+  );
+
   // Its own case is a direct fit; a longer case reaches it with spacers.
   const result = page.locator("#result");
   await expect(result.getByRole("button", { name: /RMS-38\/360/ })).toBeVisible();
@@ -255,6 +261,11 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
   await expect(page.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
     "href",
     "https://motor.fusionspace.co/motor/aerotech/I161W",
+  );
+  // The ThrustCurve provenance link points at this motor's own catalog page.
+  await expect(page.getByRole("link", { name: /View on ThrustCurve/ })).toHaveAttribute(
+    "href",
+    "https://www.thrustcurve.org/motors/AeroTech/I161W/",
   );
 });
 

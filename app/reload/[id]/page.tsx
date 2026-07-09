@@ -134,6 +134,16 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
           Check stock &amp; pricing
           <span aria-hidden>↗</span>
         </a>
+        <a
+          href={r.tcUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`The ${r.designation}'s full specs and thrust curve on ThrustCurve — the catalog Muster mirrors`}
+          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+        >
+          View on ThrustCurve
+          <span aria-hidden>↗</span>
+        </a>
       </div>
 
       <p className="mt-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
