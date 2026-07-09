@@ -45,8 +45,18 @@ reload (buy each flight), with part numbers and conservative notes.
 The whole thing is a small graph in `lib/`:
 
 - **Reloads** (`lib/data/reloads.json`) — a static mirror of ThrustCurve: designation, class,
-  impulse, thrust, delays, propellant, certification, and — crucially — ThrustCurve's own
-  per-motor `caseInfo`, which *is* the authoritative reload → case mapping.
+  impulse, thrust, delays, propellant, certification, the per-motor `tcUrl`, and — crucially —
+  ThrustCurve's own per-motor `caseInfo`, which *is* the authoritative reload → case mapping. That
+  `caseInfo` is also the mirror's **membership rule**: a reload with no case field can't be placed
+  in the compatibility graph (Muster couldn't say what hardware it needs), and `validateGraph`
+  enforces it — any reload whose `caseInfo` doesn't resolve to a known case fails `next build`. A
+  2026-07 completeness audit against the live ThrustCurve API confirmed the mirror carries every
+  in-scope reload (AeroTech 24–98 mm, Cesaroni 24–98 mm, Loki 38–76 mm); the only in-scope reloads
+  it omits are three out-of-production motors ThrustCurve records with *no* `caseInfo` — correctly
+  excluded, since inferring their case would be exactly the unsourced guess the safety rules forbid.
+  Each reload's `tcUrl` is surfaced as a **"View on ThrustCurve"** link on its spec card and page,
+  so a flyer can reach the authoritative specs and thrust curve — Muster mirrors ThrustCurve, so it
+  should show its work.
 - **Hardware** (`lib/data/hardware.ts`) — the curated half: cases (with the closures they
   share, the seal-disc rule, and adapter eligibility), the forward/aft closures, the seal
   discs, and the Reload Adapter System with its spacer table. Every node cites a source.

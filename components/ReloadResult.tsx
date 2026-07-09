@@ -73,16 +73,28 @@ export default function ReloadResult({
           <SparkyBadge reload={reload} />
           <AvailabilityBadge reload={reload} />
         </div>
-        <a
-          href={checkStockUrl(reload)}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={`See live stock and pricing for the ${reload.designation} on the HPR Motor Finder`}
-          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-        >
-          Check stock &amp; pricing
-          <span aria-hidden>↗</span>
-        </a>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <a
+            href={checkStockUrl(reload)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`See live stock and pricing for the ${reload.designation} on the HPR Motor Finder`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            Check stock &amp; pricing
+            <span aria-hidden>↗</span>
+          </a>
+          <a
+            href={reload.tcUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`See the ${reload.designation}'s full specs and thrust curve on ThrustCurve — the catalog Muster mirrors`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            View on ThrustCurve
+            <span aria-hidden>↗</span>
+          </a>
+        </div>
       </div>
 
       <section className="mt-6">
