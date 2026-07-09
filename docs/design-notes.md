@@ -221,10 +221,39 @@ brand, or a diameter other than 75/98. Sourced from Cesaroni's FAQ + Pro75 instr
 AeroTech's crossload announcement and advisory — the research that turned up the AeroTech advisory
 is why the two directions aren't shown as symmetric.
 
-The deferred, still-sourced neighbours (noted for later): the Cesaroni Pro75→AMW75 adapter (needs
-AMW hardware added first), Loki's 98 mm liner sets for foreign cases (no published reload-level
-recipe), and RouseTech / Dr. Rocket as RMS aliases (licensed, but community-attested rather than a
-crisp manufacturer statement).
+The deferred, still-sourced neighbours (noted for later): Loki's 98 mm liner sets for foreign cases
+(no published reload-level recipe), and RouseTech / Dr. Rocket as RMS aliases (licensed, but
+community-attested rather than a crisp manufacturer statement).
+
+### AMW (Animal Motor Works) — investigated 2026-07, deferred
+
+A fourth motor system was the obvious next content lever, so AMW's sourcing was researched against
+manufacturer and vendor pages before any build. The verdict is a clear **defer**, recorded here so it
+doesn't get re-litigated until the facts change:
+
+- **AMW no longer manufactures.** It operates today as a vendor/dealer (AMW/ProX, at amwprox.com), and
+  its current "AMW"-branded reloads are Cesaroni-made — the AMW/CTI product lines merged years ago. So
+  adding AMW would largely *duplicate* Cesaroni Pro nodes Muster already sources directly; some AMW
+  reloads (e.g. the I297) even carry a Cesaroni `caseInfo` like `Pro38-5G` outright.
+- **The classic AMW reloads aren't buyable.** The AMW/ProX store lists them pre-order only, with an
+  explicit "no shipping until they are certified for NAR/TRA use" — which fails the shopping-aid rule
+  of pointing only at hardware you can actually buy.
+- **The reusable-hardware graph can't be sourced to our bar.** No reachable manufacturer or vendor page
+  itemizes AMW's forward/aft closures, their part numbers, or a spacer system per diameter; 98 mm cases
+  aren't sold anywhere; and the `ABC 75-xxxx` case strings in ThrustCurve's `caseInfo` map to nothing
+  purchasable (they're a data artifact for the AMW 75 mm sizes, not a catalogued brand). What little AMW
+  hardware is for sale is used/NOS and mostly out of stock at a single vendor — transient inventory, not
+  the durable, every-node-cited catalog the safety contract needs.
+- **The one manufacturer-sanctioned AMW edge isn't worth modeling.** The AMWPro75-ADAPT lets a Cesaroni
+  Pro75 reload fly in an AMW 75 mm snap-ring case (per a Cesaroni-published instruction sheet), but it
+  points *into* legacy AMW hardware a flyer must already own and adds no buyable node. AMW↔AeroTech RMS
+  compatibility is only community-attested (shared snap-ring tube dimensions), not manufacturer-published
+  — categorically weaker than the sanctioned AeroTech↔Cesaroni 75/98 crossloads the tool already models,
+  and not to be treated the same way.
+
+Revisit only if AMW republishes a first-party hardware catalog (cases + closures + part numbers) or a
+retailer starts itemizing AMW closures in stock. Until then, the honest, conservative line holds: no
+system whose hardware graph can't be fully sourced, and no pointer at hardware you can't buy.
 
 ### The kit planner (companion tool)
 
