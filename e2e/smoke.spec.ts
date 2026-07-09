@@ -75,6 +75,25 @@ test("case → reloads → shopping list (the core loop)", async ({ page }) => {
   await expect(page).toHaveURL(/pick=at-i161w/);
 });
 
+test("selecting a result is announced to assistive tech via a polite live region", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const status = page.locator("#tool [role=status]");
+
+  // Picking a case announces a count, not the whole list.
+  await page.getByRole("button", { name: /RMS-38\/360/ }).first().click();
+  await expect(status).toHaveText(/RMS-38\/360 case selected\. \d+ reloads it can fly\./);
+
+  // Drilling into a reload announces the shopping list is ready.
+  await page.locator("#result").getByRole("button", { name: /I161W/ }).first().click();
+  await expect(status).toHaveText("Shopping list ready: I161W in the RMS-38/360 case.");
+
+  // The other direction announces a case count.
+  await page.getByRole("radio", { name: "I have a reload" }).click();
+  await page.getByRole("searchbox", { name: /Search reloads/ }).fill("I161W");
+  await page.getByRole("button", { name: /I161W/ }).first().click();
+  await expect(status).toHaveText(/I161W reload selected\. \d+ cases? fly it\./);
+});
+
 test("a shared link restores the exact view", async ({ page }) => {
   await page.goto("/?have=case&case=rms-38-360&pick=at-i161w", { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { name: /To fly the I161W/ })).toBeVisible();

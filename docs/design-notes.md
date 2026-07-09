@@ -259,6 +259,21 @@ Motor Finder, which does have it. `jsonld.test.ts` runs the Product invariants o
 (valid brand, designation-as-SKU, no non-null-value property, and never an Offer), and the e2e suite
 asserts the Product renders on a real case and reload page.
 
+### Accessibility
+
+The family's baseline, carried here: a skip-to-tool link, a single indigo `focus-visible` ring on
+every interactive control, the mode/system/diameter/sort switches as real ARIA radio groups
+(one tab stop, arrow keys move the selection), and the axe audit in CI over light and dark on the
+tool, both deep-link pages, and a crossload page.
+
+One thing the axe audit *can't* see is a missing announcement: selecting a case or reload swaps a
+whole result panel and shopping list into the page with no scroll or focus change, so a sighted user
+sees it appear but a screen-reader user is told nothing — the markup is valid either way. A persistent
+polite live region (`role="status"`, always in the DOM so a text change is announced) carries a terse
+summary of what changed — "RMS-38/360 case selected. 12 reloads it can fly." then "Shopping list ready:
+I161W in the RMS-38/360 case." — a count, never the whole list. An e2e test drives both directions and
+asserts the announcement.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the
