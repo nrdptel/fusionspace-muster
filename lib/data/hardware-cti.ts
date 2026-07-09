@@ -32,6 +32,12 @@ const S = {
   hw38: "https://www.rocketarium.com/Cesaroni/Hardware/38",
   hw54: "https://www.rocketarium.com/Cesaroni/Hardware/54",
   hw7598: "https://www.apogeerockets.com/Rocket_Motors/Cesaroni_Casings/75mm_Casings/Cesaroni_75mm_3-Grain_Hardware_Set",
+  // Rear-closure / forward-closure part-number pages (the hardware pages above list the sets;
+  // these name each closure's PN).
+  cl29: "https://www.rocketarium.com/High-Power-Rocketry/Cesaroni/Hardware/29/Closure",
+  nh75: "https://pro38.com/products/p75-nozzle-holder-rear-closure-nh/",
+  nh98: "https://www.sunward1.com/product/pro98-nozzle-holder-p98-nh/",
+  fc98: "https://www.sunward1.com/product/pro98-forward-closure-p98-fc/",
 };
 
 // Grain lengths present per diameter (from ThrustCurve's case field). `xl` marks the longer
@@ -55,31 +61,36 @@ const RESOLVED_SPACER = new Set<number>([29, 38, 54]);
 // Diameters with a spacer system we only advise on (vendor-inferred, or Pro24 which has none).
 const ADVISORY_SPACER = new Set<number>([75, 98]);
 
-const rearSrc: Record<number, { pn?: string; src: string }> = {
+// `src` is the general hardware page (also used as the case source); `pnSrc`, when present, is the
+// page that names the closure's exact part number, cited alongside it on the closure part.
+const rearSrc: Record<number, { pn?: string; src: string; pnSrc?: string }> = {
   24: { src: S.hw24 },
-  29: { src: S.hw29 },
+  29: { pn: "P29-CL", src: S.hw29, pnSrc: S.cl29 },
   54: { pn: "P54-CL", src: S.hw54 },
-  75: { src: S.hw7598 },
-  98: { src: S.hw7598 },
+  75: { pn: "P75-NH", src: S.hw7598, pnSrc: S.nh75 },
+  98: { pn: "P98-NH", src: S.hw7598, pnSrc: S.nh98 },
 };
 
 export const CTI_PARTS: HardwarePart[] = [
-  ...[...REAR_CLOSURE].map((d) => ({
-    id: `cti-ac-${d}`,
-    kind: "aft-closure" as const,
-    name: `${d} mm Pro rear closure`,
-    diameter: d as Diameter,
-    partNumber: rearSrc[d]?.pn,
-    sources: [rearSrc[d]?.src ?? S.tc],
-    notes: "Reusable; shared across every case length in this diameter. The nozzle is part of the reload cartridge, not reusable.",
-  })),
+  ...[...REAR_CLOSURE].map((d) => {
+    const r = rearSrc[d];
+    return {
+      id: `cti-ac-${d}`,
+      kind: "aft-closure" as const,
+      name: `${d} mm Pro rear closure`,
+      diameter: d as Diameter,
+      partNumber: r?.pn,
+      sources: r?.pnSrc ? [r.src, r.pnSrc] : [r?.src ?? S.tc],
+      notes: "Reusable; shared across every case length in this diameter. The nozzle is part of the reload cartridge, not reusable.",
+    };
+  }),
   ...[...FWD_CLOSURE].map((d) => ({
     id: `cti-fc-${d}`,
     kind: "forward-closure" as const,
     name: `${d} mm Pro forward closure`,
     diameter: d as Diameter,
-    partNumber: d === 75 ? "P75-FC" : undefined,
-    sources: [S.hw7598],
+    partNumber: d === 75 ? "P75-FC" : "P98-FC",
+    sources: [d === 98 ? S.fc98 : S.hw7598],
     notes: "Reusable on Pro75/98 (part of the hardware set); shared across case lengths.",
   })),
 ];

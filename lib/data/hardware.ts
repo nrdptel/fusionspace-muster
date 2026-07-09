@@ -41,6 +41,9 @@ const S = {
     "https://www.apogeerockets.com/Rocket_Motors/Rouse-Tech_Casings/38mm_Casings/RMS-38_720_Casing",
   case29range:
     "https://www.apogeerockets.com/Rocket_Motors/Rouse-Tech_Casings/29mm_Casings/RMS-29_40-120",
+  // Seal-disc part-number pages (the collection pages above list the discs; these name the PN).
+  sd29: "https://www.rocketarium.com/High-Power-Rocketry/Motors/29/Seal-Disk",
+  sd38: "https://www.buyrocketmotors.com/products/aerotech-38mm-rms-38-480-1320-38mm-forward-seal-disc-stainless-steel",
 };
 
 // --- Reusable parts ---------------------------------------------------------
@@ -52,11 +55,11 @@ export const PARTS: HardwarePart[] = [
   // 29 mm
   { id: "fc-29", kind: "forward-closure", name: "29 mm forward closure", diameter: 29, partNumber: "29FCC", sources: [S.rms29] },
   { id: "ac-29", kind: "aft-closure", name: "29 mm aft closure", diameter: 29, partNumber: "29AC2", sources: [S.rms29] },
-  { id: "sd-29", kind: "seal-disc", name: "29 mm forward seal disc", diameter: 29, sources: [S.rms29], notes: "Required on the longer 29 mm cases (240 and up); usually included with the complete hardware set." },
+  { id: "sd-29", kind: "seal-disc", name: "29 mm forward seal disc", diameter: 29, partNumber: "29FSD", sources: [S.rms29, S.sd29], notes: "Required on the longer 29 mm cases (240 and up); usually included with the complete hardware set." },
   // 38 mm
   { id: "fc-38", kind: "forward-closure", name: "38 mm forward closure", diameter: 38, partNumber: "38FCC", sources: [S.rms38] },
   { id: "ac-38", kind: "aft-closure", name: "38 mm aft closure", diameter: 38, partNumber: "38AC2", sources: [S.rms38] },
-  { id: "sd-38", kind: "seal-disc", name: "38 mm forward seal disc", diameter: 38, sources: [S.rms38, S.case38_720], notes: "Required on the longer 38 mm cases (480 and up); usually included with the complete hardware set." },
+  { id: "sd-38", kind: "seal-disc", name: "38 mm forward seal disc", diameter: 38, partNumber: "38FSDSS", sources: [S.rms38, S.case38_720, S.sd38], notes: "Required on the longer 38 mm cases (480 and up); usually included with the complete hardware set." },
   // 54 mm
   { id: "fc-54", kind: "forward-closure", name: "54 mm forward closure", diameter: 54, partNumber: "54FCC", sources: [S.rms54] },
   { id: "ac-54", kind: "aft-closure", name: "54 mm aft closure", diameter: 54, partNumber: "54ACC", sources: [S.rms54] },

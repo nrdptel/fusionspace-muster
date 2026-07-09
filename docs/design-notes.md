@@ -101,6 +101,16 @@ the chart) and the **6GXL exception**, which the model already handles by leavin
 advisory rather than resolved — Cesaroni needs a dedicated XL spacer there (a regular spacer on
 Pro29), not the standard step.
 
+A follow-up audit of the **closures and seal discs** (2026-07) checked every asserted part number
+and every seal-disc threshold against manufacturer/vendor pages: all confirmed correct, no value
+wrong. It closed the remaining gaps by *adding* the part numbers that were still missing rather
+than correcting any — the AeroTech 29 mm (29FSD) and 38 mm (38FSDSS, stainless, matching the
+confirmed 54/75/98 FSDSS convention) forward seal discs, and the Cesaroni Pro29 rear closure
+(P29-CL), Pro75/Pro98 rear closures (the nozzle holders P75-NH / P98-NH — deliberately *not*
+P75-CL, which is only a retaining ring, the trap here), and the Pro98 forward closure (P98-FC).
+Each new number cites the page that names it, kept separate from the general hardware-set page so a
+case's own source isn't narrowed to a single closure listing.
+
 ### Safety, carried the way the family carries it
 
 This is more safety-critical than the calculators — a wrong edge can mean an incompatible
