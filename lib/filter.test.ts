@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyFilter, propellantsOf, isNarrowing, DEFAULT_FILTER } from "./filter";
+import { applyFilter, propellantsOf, isNarrowing, byImpulse, DEFAULT_FILTER } from "./filter";
 import type { ReloadFit } from "./resolve";
 import type { Reload } from "./data/types";
 
@@ -75,5 +75,23 @@ describe("isNarrowing", () => {
     expect(isNarrowing(DEFAULT_FILTER)).toBe(false);
     expect(isNarrowing({ ...DEFAULT_FILTER, propellant: "Redline" })).toBe(true);
     expect(isNarrowing({ ...DEFAULT_FILTER, inProductionOnly: true })).toBe(true);
+  });
+});
+
+describe("byImpulse", () => {
+  it("orders reloads by ascending total impulse, designation as a stable tiebreak", () => {
+    const out = byImpulse([
+      reload({ designation: "K200", totImpulseNs: 2000 }),
+      reload({ designation: "H80", totImpulseNs: 200 }),
+      reload({ designation: "H50", totImpulseNs: 200 }),
+    ]);
+    // 200 (H50 < H80 by designation), then 2000.
+    expect(out.map((r) => r.designation)).toEqual(["H50", "H80", "K200"]);
+  });
+
+  it("does not mutate the input", () => {
+    const input = [reload({ designation: "B", totImpulseNs: 300 }), reload({ designation: "A", totImpulseNs: 100 })];
+    byImpulse(input);
+    expect(input.map((r) => r.designation)).toEqual(["B", "A"]);
   });
 });

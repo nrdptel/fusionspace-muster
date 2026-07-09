@@ -348,3 +348,19 @@ test("a sparky reload warns about field restrictions in the shopping list", asyn
     page.locator("#shopping-list").getByText(/many ranges restrict these/i),
   ).toBeVisible();
 });
+
+test("the reload picker lists search results in ascending impulse order", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByRole("radio", { name: "I have a reload" }).click();
+  // Default view is AeroTech, 38 mm — a broad spread of impulse classes, no selection yet, so the
+  // only "N·s" rows on the page are the picker's results.
+  const rows = await page.locator('#tool button:has-text("N·s")').allInnerTexts();
+  expect(rows.length).toBeGreaterThan(5);
+  const impulses = rows.map((t) => {
+    const m = t.match(/([\d.]+)\s*N·s/);
+    return m ? Number.parseFloat(m[1]) : NaN;
+  });
+  expect(impulses.every((n) => Number.isFinite(n))).toBe(true);
+  // Rendered order must already be sorted ascending.
+  expect(impulses).toEqual([...impulses].sort((a, b) => a - b));
+});
