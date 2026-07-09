@@ -50,7 +50,14 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
   // question on its own; the tool has the copyable list and any spacer-fit variants.
   const nativeList = res.native ? shoppingList(res.native.motorCase, r, "native", 0) : null;
 
-  const jsonLd = reloadJsonLd(r, siteUrl);
+  // The cases that fly this reload (its own + longer ones via spacers), deduped by id. Crossloads
+  // stay out — they're a separate cautioned section, not a resolved fit.
+  const flyingById = new Map<string, string>();
+  for (const f of [...(res.native ? [res.native] : []), ...res.viaAdapter]) {
+    flyingById.set(f.motorCase.id, f.motorCase.designation);
+  }
+  const flyingCases = [...flyingById].map(([id, name]) => ({ id, name }));
+  const jsonLd = reloadJsonLd(r, siteUrl, flyingCases);
 
   const caseRow = (f: CaseFit) => (
     <li key={`${f.motorCase.id}-${f.spacers}`}>

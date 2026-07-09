@@ -213,6 +213,9 @@ test("deep-linked case page: static content, cross-links to reloads, and a CTA i
   expect(caseLd).toContain('"@type":"Product"');
   expect(caseLd).toContain('"sku":"RMS-38/360"');
   expect(caseLd?.toLowerCase()).not.toContain("offer");
+  // …and an ItemList of the reloads it flies, linking to their pages.
+  expect(caseLd).toContain('"@type":"ItemList"');
+  expect(caseLd).toContain('/reload/at-i161w');
 
   // A reload it flies links to that reload's own page.
   const reloadLink = page.getByRole("link", { name: /I161W/ }).first();
@@ -235,6 +238,9 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
   expect(reloadLd).toContain('"@type":"Product"');
   expect(reloadLd).toContain('"sku":"I161W"');
   expect(reloadLd?.toLowerCase()).not.toContain("offer");
+  // …and an ItemList of the cases that fly it, linking to their pages.
+  expect(reloadLd).toContain('"@type":"ItemList"');
+  expect(reloadLd).toContain('/case/rms-38-360');
 
   // The page answers "what to buy" on its own: the reusable hardware + the reload kit.
   await expect(page.getByRole("heading", { name: "What you need to fly it" })).toBeVisible();

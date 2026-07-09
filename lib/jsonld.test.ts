@@ -105,3 +105,43 @@ describe("case structured data", () => {
     }
   });
 });
+
+type ListItem = { "@type": string; position: number; url: string; name: string };
+function itemListOf(graph: ReturnType<typeof caseJsonLd>) {
+  return graph["@graph"].find((n) => n["@type"] === "ItemList") as
+    | (Record<string, unknown> & { numberOfItems: number; itemListElement: ListItem[] })
+    | undefined;
+}
+
+describe("ItemList structured data (the list a page is)", () => {
+  it("a case page lists the reloads it flies, as ListItems linking to their reload pages", () => {
+    const c = allCases().find((x) => x.partNumber)!;
+    const related = [
+      { id: "at-i161w", name: "I161W" },
+      { id: "at-i229t", name: "I229T" },
+    ];
+    const il = itemListOf(caseJsonLd(c, SITE, related))!;
+    expect(il.numberOfItems).toBe(2);
+    expect(il.itemListElement).toHaveLength(2);
+    expect(il.itemListElement[0]).toMatchObject({
+      "@type": "ListItem",
+      position: 1,
+      url: `${SITE}/reload/at-i161w`,
+      name: "I161W",
+    });
+    // Positions are 1-based and contiguous.
+    expect(il.itemListElement.map((x) => x.position)).toEqual([1, 2]);
+  });
+
+  it("a reload page lists the cases that fly it, linking to their case pages", () => {
+    const r = allReloads()[0];
+    const il = itemListOf(reloadJsonLd(r, SITE, [{ id: "rms-38-360", name: "RMS-38/360" }]))!;
+    expect(il.numberOfItems).toBe(1);
+    expect(il.itemListElement[0].url).toBe(`${SITE}/case/rms-38-360`);
+  });
+
+  it("omits the ItemList entirely when there are no related entities", () => {
+    expect(itemListOf(caseJsonLd(allCases()[0]))).toBeUndefined();
+    expect(itemListOf(reloadJsonLd(allReloads()[0]))).toBeUndefined();
+  });
+});

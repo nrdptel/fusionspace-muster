@@ -268,6 +268,14 @@ Motor Finder, which does have it. `jsonld.test.ts` runs the Product invariants o
 (valid brand, designation-as-SKU, no non-null-value property, and never an Offer), and the e2e suite
 asserts the Product renders on a real case and reload page.
 
+Each page also marks up **the list it actually is** with an `ItemList`: a case page carries the reloads
+it flies, a reload page the cases that fly it, each a `ListItem` linking to that entity's own page (the
+summary-of-links form Google recommends, not an inline `item`). It's built from the same resolved fits
+the page renders, deduped by id (a longer case can list a reload at both one and two spacers, but it's
+one entry), and crossloads are deliberately left out — they're a cautioned section, not a resolved fit,
+so they don't belong in the page's list of what it flies. Accurate by construction: it's the on-page
+content, not a new claim.
+
 ### Accessibility
 
 The family's baseline, carried here: a skip-to-tool link, a single indigo `focus-visible` ring on
