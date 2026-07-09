@@ -47,6 +47,32 @@ export default function Methodology() {
           </p>
         </Disclosure>
 
+        <Disclosure summary="Cross-brand crossloads (75 & 98 mm)">
+          <p>
+            Muster keeps the brands apart on purpose — their hardware doesn&apos;t interchange — with
+            one sourced exception the manufacturers themselves publish: at{" "}
+            <strong>75&nbsp;mm and 98&nbsp;mm</strong>, AeroTech RMS and Cesaroni Pro are deliberately
+            cross-compatible. Cesaroni engineered its Pro75/98 reloads to share the RMS case and ships
+            the o-rings for either brand, and AeroTech certified its own 75/98 reloads for Cesaroni
+            hardware. Muster shows these as a distinct <strong>crossload</strong> caution — never a
+            green &ldquo;direct fit&rdquo; — with each maker&apos;s own conditions attached.
+          </p>
+          <p>
+            The two directions aren&apos;t symmetric. An AeroTech reload in a Cesaroni case is
+            AeroTech&apos;s sanctioned &ldquo;crossload&rdquo; (a Medusa-nozzle reload needs a
+            single-throat nozzle). A Cesaroni reload in an RMS case is something{" "}
+            <strong>AeroTech advises against</strong> — the RMS case wants a forward seal disc the
+            Cesaroni reload doesn&apos;t include, and AeroTech won&apos;t warranty it. Either way, a
+            cross-brand motor has to be certified in the hardware it&apos;s flown in.
+          </p>
+          <p>
+            Nothing at <strong>29/38/54&nbsp;mm</strong> is a crossload: no manufacturer or
+            certification body sanctions it, and the closures and reload formats differ, so Muster
+            doesn&apos;t show it — a wrong cross-brand pairing is exactly the kind of edge that ends
+            in a CATO.
+          </p>
+        </Disclosure>
+
         <Disclosure summary="What you own vs. what's in the reload">
           <p>
             The reusable metal <strong>hardware</strong> you buy once, shared across every case

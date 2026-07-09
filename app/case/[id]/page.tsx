@@ -5,6 +5,7 @@ import { allCases, caseById, partById, SYSTEM_LABEL } from "@/lib/graph";
 import { resolveCase, type ReloadFit } from "@/lib/resolve";
 import { formatImpulse, formatThrust, propLabel } from "@/lib/format";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
+import CrossloadReloads from "@/components/CrossloadReloads";
 import EntityFrame from "@/components/EntityFrame";
 
 // Every case id is known at build time; anything else 404s (no on-demand rendering on a
@@ -182,6 +183,13 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
             </>
           )}
         </section>
+      )}
+
+      {res.crossload.length > 0 && (
+        <CrossloadReloads
+          fits={res.crossload}
+          otherBrandLabel={SYSTEM_LABEL[res.crossload[0].reload.manufacturer]}
+        />
       )}
     </EntityFrame>
   );

@@ -6,6 +6,7 @@ import { resolveReload, shoppingList, certLabel, type CaseFit } from "@/lib/reso
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
+import CrossloadCases from "@/components/CrossloadCases";
 import EntityFrame from "@/components/EntityFrame";
 
 export const dynamicParams = false;
@@ -212,6 +213,8 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
           </p>
         )}
       </section>
+
+      <CrossloadCases fits={res.crossload} />
     </EntityFrame>
   );
 }

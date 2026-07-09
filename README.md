@@ -45,11 +45,13 @@ purchase that unlocks the most more — and it won't suggest a case whose reload
 reach with a spacer. Your kit stays on the device, nothing uploaded.
 
 Scope today is **AeroTech RMS** (24–98 mm), **Cesaroni Pro** (24–98 mm), and **Loki Research**
-(38–76 mm) — the systems most high-power flyers actually own. Choose the system with one toggle;
-the hardware never interchanges across brands, and Muster won't let a result cross that line.
-Spacer fits are resolved where the manufacturer publishes the rule (AeroTech 38 mm, Cesaroni
-Pro29/38/54) and flagged as an advisory elsewhere; Loki publishes no spacer system, so its
-reloads are direct-fit only. Cross-brand certification is a natural next step.
+(38–76 mm) — the systems most high-power flyers actually own. Choose the system with one toggle; the hardware
+doesn't interchange across brands, and Muster won't invent a cross-brand fit — with one sourced
+exception the manufacturers publish: at **75 mm and 98 mm**, AeroTech RMS and Cesaroni Pro are
+cross-compatible ("crossloads"), shown as a distinct caution with each maker's conditions, never a
+resolved fit. Spacer fits are resolved where the manufacturer publishes the rule (AeroTech 38 mm,
+Cesaroni Pro29/38/54) and flagged as an advisory elsewhere; Loki publishes no spacer system, so its
+reloads are direct-fit only.
 
 - **Certification as a dimension, not a checkbox** — each reload carries its certifying body
   (NAR / Tripoli) or a caution when none is listed, and out-of-production is shown as its own
@@ -78,7 +80,8 @@ Two halves meet in a small resolver:
 - The **hardware graph** — cases, closures, seal-disc rules, and spacer rules — is curated by
   hand: `lib/data/hardware.ts` for AeroTech RMS, `lib/data/hardware-cti.ts` for Cesaroni Pro, and
   `lib/data/hardware-loki.ts` for Loki Research, with a source on every node. Cases, closures, and
-  adapters all carry their manufacturer, and a reload can never resolve to another brand's hardware.
+  adapters all carry their manufacturer, and a reload only ever resolves to another brand's hardware
+  through the manufacturers' published 75/98 mm crossloads (`lib/data/crossload.ts`), shown as a caution.
 
 Spacer compatibility is resolved only where the manufacturer publishes the rule — AeroTech
 38 mm (its full spacer chart) and Cesaroni Pro29/38/54 (up to two spacers, one or two grain

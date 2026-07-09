@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { caseByDesignation, reloadById, reloadsForCase, allReloads } from "./graph";
+import { caseByDesignation, reloadById, reloadsForCase, allReloads, allCases } from "./graph";
 import {
   resolveCase,
   resolveReload,
@@ -325,6 +325,56 @@ describe("Loki Research — the third system (native-fit only)", () => {
       expect(cases.every((c) => c.manufacturer === "Loki")).toBe(true);
       // No Loki reload should ever pick up a spacer fit.
       expect(res.viaAdapter).toEqual([]);
+    }
+  });
+});
+
+describe("Cross-brand crossloads — the sanctioned 75/98 mm exception", () => {
+  it("a Cesaroni case takes AeroTech reloads, and the note is AeroTech's sanctioned direction", () => {
+    const c = caseByDesignation("Pro98-2G")!;
+    const res = resolveCase(c);
+    expect(res.crossload.length).toBeGreaterThan(0);
+    expect(res.crossload.every((f) => f.reload.manufacturer === "AeroTech")).toBe(true);
+    expect(res.crossload[0].note).toMatch(/AeroTech certifies/);
+    expect(res.crossload.every((f) => f.sources.length > 0)).toBe(true);
+  });
+
+  it("an AeroTech case takes Cesaroni reloads, and the note carries AeroTech's advisory against it", () => {
+    const c = caseByDesignation("RMS-98/5120")!;
+    const res = resolveCase(c);
+    expect(res.crossload.length).toBeGreaterThan(0);
+    expect(res.crossload.every((f) => f.reload.manufacturer === "Cesaroni")).toBe(true);
+    expect(res.crossload[0].note).toMatch(/AeroTech recommends against|forward seal disc/);
+  });
+
+  it("resolveReload maps a reload to the paired foreign case, cross-brand and same diameter", () => {
+    const ctiReload = allReloads().find((r) => r.caseInfo === "Pro98-2G")!;
+    const rr = resolveReload(ctiReload);
+    expect(rr.crossload.map((f) => f.motorCase.designation)).toContain("RMS-98/5120");
+    for (const f of rr.crossload) {
+      expect(f.motorCase.manufacturer).not.toBe(ctiReload.manufacturer);
+      expect(f.motorCase.diameter).toBe(ctiReload.diameter);
+    }
+  });
+
+  it("holds the line: no crossloads at 24/29/38/54 mm", () => {
+    for (const d of ["RMS-38/360", "Pro38-3G", "RMS-54/2560", "Pro54-3G", "RMS-29/360"]) {
+      const c = caseByDesignation(d);
+      if (c) expect(resolveCase(c).crossload, `${d} should have no crossload`).toEqual([]);
+    }
+    // And no reload under 75 mm gets a crossload case.
+    for (const r of allReloads().filter((x) => x.diameter < 75)) {
+      expect(resolveReload(r).crossload).toEqual([]);
+    }
+  });
+
+  it("every crossload the resolver ever emits is cross-brand, same diameter, 75 or 98 mm only", () => {
+    for (const c of allCases()) {
+      for (const f of resolveCase(c).crossload) {
+        expect(f.reload.manufacturer).not.toBe(c.manufacturer);
+        expect(f.reload.diameter).toBe(c.diameter);
+        expect([75, 98]).toContain(c.diameter);
+      }
     }
   });
 });

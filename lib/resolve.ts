@@ -23,6 +23,7 @@ import {
   reloadsForCase,
 } from "./graph";
 import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
+import { CROSSLOAD_PAIRS, CROSSLOAD_SOURCES, NOTE_CTI_IN_RMS, NOTE_RMS_IN_CTI } from "./data/crossload";
 
 export type FitKind = "native" | "adapter";
 
@@ -43,6 +44,21 @@ export interface CaseFit {
   adapter?: AdapterSystem;
 }
 
+/** A foreign-brand reload a case can take by a manufacturer-published crossload (75/98 mm only). */
+export interface CrossloadReloadFit {
+  reload: Reload;
+  /** The manufacturer condition for loading this foreign reload into the resolved case. */
+  note: string;
+  sources: string[];
+}
+
+/** A foreign-brand case that can fly a reload by a manufacturer-published crossload. */
+export interface CrossloadCaseFit {
+  motorCase: MotorCase;
+  note: string;
+  sources: string[];
+}
+
 export interface CaseResolution {
   motorCase: MotorCase;
   /** Reloads built for this case. */
@@ -53,6 +69,8 @@ export interface CaseResolution {
   adapter?: AdapterSystem;
   /** True when the diameter has an adapter but its steps aren't resolved (29/54 mm). */
   adapterAdvisory: boolean;
+  /** Cross-brand reloads this case can take, per the manufacturers' published crossloads. */
+  crossload: CrossloadReloadFit[];
 }
 
 export interface ReloadResolution {
@@ -61,6 +79,8 @@ export interface ReloadResolution {
   native?: CaseFit;
   /** Longer cases that can fly it with spacers. */
   viaAdapter: CaseFit[];
+  /** Cross-brand cases that can fly this reload, per the manufacturers' published crossloads. */
+  crossload: CrossloadCaseFit[];
 }
 
 const byImpulse = (a: ReloadFit, b: ReloadFit) =>
@@ -88,12 +108,30 @@ export function resolveCase(motorCase: MotorCase): CaseResolution {
   // Adapter fits: fewest spacers first (simplest build), then by impulse.
   viaAdapter.sort((a, b) => a.spacers - b.spacers || byImpulse(a, b));
 
+  // Cross-brand crossloads (75/98 mm only): the foreign case of the same published size, and
+  // this case takes its reloads — with the note for loading a foreign reload into THIS brand.
+  const crossload: CrossloadReloadFit[] = [];
+  const pair = CROSSLOAD_PAIRS.find((p) => p.rms === motorCase.designation || p.pro === motorCase.designation);
+  if (pair) {
+    const foreignDesignation = motorCase.manufacturer === "AeroTech" ? pair.pro : pair.rms;
+    const note = motorCase.manufacturer === "AeroTech" ? NOTE_CTI_IN_RMS : NOTE_RMS_IN_CTI;
+    for (const reload of reloadsForCase(foreignDesignation)) {
+      crossload.push({ reload, note, sources: CROSSLOAD_SOURCES });
+    }
+    crossload.sort(
+      (a, b) =>
+        a.reload.totImpulseNs - b.reload.totImpulseNs ||
+        a.reload.designation.localeCompare(b.reload.designation),
+    );
+  }
+
   return {
     motorCase,
     native,
     viaAdapter,
     adapter,
     adapterAdvisory: !!(adapter && adapter.advisoryOnly),
+    crossload,
   };
 }
 
@@ -119,7 +157,19 @@ export function resolveReload(reload: Reload): ReloadResolution {
   // Smallest (cheapest, simplest) case first.
   viaAdapter.sort((a, b) => a.motorCase.slot - b.motorCase.slot || a.spacers - b.spacers);
 
-  return { reload, native, viaAdapter };
+  // Cross-brand crossloads (75/98 mm only): the foreign case of the same published size can fly
+  // this reload, with the note for loading THIS reload into that foreign brand's hardware.
+  const crossload: CrossloadCaseFit[] = [];
+  const pair = CROSSLOAD_PAIRS.find((p) => p.rms === reload.caseInfo || p.pro === reload.caseInfo);
+  if (pair) {
+    const foreignCase = caseByDesignation(reload.manufacturer === "AeroTech" ? pair.pro : pair.rms);
+    if (foreignCase) {
+      const note = reload.manufacturer === "AeroTech" ? NOTE_RMS_IN_CTI : NOTE_CTI_IN_RMS;
+      crossload.push({ motorCase: foreignCase, note, sources: CROSSLOAD_SOURCES });
+    }
+  }
+
+  return { reload, native, viaAdapter, crossload };
 }
 
 // --- Shopping list ----------------------------------------------------------

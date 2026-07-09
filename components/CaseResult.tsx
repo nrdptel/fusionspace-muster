@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import type { MotorCase } from "@/lib/data/types";
-import { partById } from "@/lib/graph";
+import { partById, SYSTEM_LABEL } from "@/lib/graph";
 import { resolveCase, type ReloadFit } from "@/lib/resolve";
 import { formatImpulse } from "@/lib/format";
 import { applyFilter, propellantsOf, isNarrowing, DEFAULT_FILTER } from "@/lib/filter";
 import ReloadRow from "./ReloadRow";
 import ReloadFilters from "./ReloadFilters";
+import CrossloadReloads from "./CrossloadReloads";
 
 /** The result for "I have this case": the case's spec, the hardware it always needs, and
  *  every reload it can fly — grouped into direct fits and spacer fits, with a filter/sort bar
@@ -158,6 +159,13 @@ export default function CaseResult({
             {res.adapter.notes}
           </p>
         </div>
+      )}
+
+      {res.crossload.length > 0 && (
+        <CrossloadReloads
+          fits={res.crossload}
+          otherBrandLabel={SYSTEM_LABEL[res.crossload[0].reload.manufacturer]}
+        />
       )}
     </div>
   );

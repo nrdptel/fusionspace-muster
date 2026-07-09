@@ -181,6 +181,24 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
   );
 });
 
+test("cross-brand crossload shows on a 98 mm case page, framed as a caution with the advisory", async ({ page }) => {
+  await page.goto("/case/rms-98-5120", { waitUntil: "domcontentloaded" });
+  const section = page.locator("section", { has: page.getByRole("heading", { name: /Cross-brand crossload/ }) });
+  await expect(section).toBeVisible();
+  // Lists a foreign (Cesaroni) reload linking to that reload's page…
+  await expect(section.getByRole("link").first()).toHaveAttribute("href", /\/reload\/cti-/);
+  // …and carries AeroTech's advisory-against note for this direction, plus a source.
+  await expect(section.getByText(/AeroTech recommends against|forward seal disc/)).toBeVisible();
+  await expect(section.getByRole("link", { name: /pro38\.com/ }).first()).toBeVisible();
+});
+
+test("cross-brand crossload shows on a reload page, pointing at the foreign case", async ({ page }) => {
+  await page.goto("/reload/cti-4807l3150-p", { waitUntil: "domcontentloaded" });
+  const section = page.locator("section", { has: page.getByRole("heading", { name: /Also flies cross-brand/ }) });
+  await expect(section).toBeVisible();
+  await expect(section.getByRole("link", { name: /RMS-98\/5120/ })).toHaveAttribute("href", "/case/rms-98-5120");
+});
+
 test("a busy case's reloads can be filtered and sorted", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /RMS-38\/360/ }).first().click();

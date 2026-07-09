@@ -55,4 +55,11 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
     await audit(page, `reload-page/${scheme}`);
   });
+
+  test(`a11y: case page with a cross-brand crossload (${scheme})`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto("/case/rms-98-5120", { waitUntil: "networkidle" });
+    await expect(page.getByRole("heading", { name: /Cross-brand crossload/ })).toBeVisible();
+    await audit(page, `crossload/${scheme}`);
+  });
 }

@@ -10,6 +10,7 @@
 // on every import and easy to test against deliberately-broken graphs.
 
 import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
+import type { CrossloadPair } from "./data/crossload";
 
 export interface GraphInput {
   cases: MotorCase[];
@@ -128,5 +129,29 @@ function assertUnique(values: string[], message: (dupe: string) => string): void
   for (const v of values) {
     if (seen.has(v)) throw new Error(message(v));
     seen.add(v);
+  }
+}
+
+/**
+ * Cross-brand crossloads are the one place the same-manufacturer rule bends, so they get their
+ * own guard: each published pair must name a real AeroTech RMS case and a real Cesaroni Pro case
+ * of the same diameter, and only 75/98 mm — the only sizes either manufacturer sanctions.
+ */
+export function validateCrossloads(pairs: CrossloadPair[], cases: MotorCase[]): void {
+  const byDesignation = new Map<string, MotorCase>();
+  for (const c of cases) byDesignation.set(c.designation, c);
+  for (const p of pairs) {
+    if (p.diameter !== 75 && p.diameter !== 98) {
+      throw new Error(`crossload: pair ${p.rms} ↔ ${p.pro} is ${p.diameter} mm — only 75/98 mm crossloads are sanctioned.`);
+    }
+    const rms = byDesignation.get(p.rms);
+    const pro = byDesignation.get(p.pro);
+    if (!rms) throw new Error(`crossload: unknown AeroTech case "${p.rms}".`);
+    if (!pro) throw new Error(`crossload: unknown Cesaroni case "${p.pro}".`);
+    if (rms.manufacturer !== "AeroTech") throw new Error(`crossload: "${p.rms}" is not an AeroTech case.`);
+    if (pro.manufacturer !== "Cesaroni") throw new Error(`crossload: "${p.pro}" is not a Cesaroni case.`);
+    if (rms.diameter !== p.diameter || pro.diameter !== p.diameter) {
+      throw new Error(`crossload: pair ${p.rms} ↔ ${p.pro} diameters disagree with ${p.diameter} mm.`);
+    }
   }
 }

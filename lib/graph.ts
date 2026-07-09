@@ -7,8 +7,9 @@ import reloadsDoc from "./data/reloads.json";
 import { CASES as RMS_CASES, PARTS as RMS_PARTS, ADAPTERS as RMS_ADAPTERS } from "./data/hardware";
 import { CTI_CASES, CTI_PARTS, CTI_ADAPTERS } from "./data/hardware-cti";
 import { LOKI_CASES, LOKI_PARTS } from "./data/hardware-loki";
+import { CROSSLOAD_PAIRS } from "./data/crossload";
 import type { AdapterSystem, HardwarePart, Manufacturer, MotorCase, Reload } from "./data/types";
-import { validateGraph } from "./validate";
+import { validateGraph, validateCrossloads } from "./validate";
 
 // The full graph is every motor system merged. Cases/parts/adapters carry their manufacturer,
 // and designations are distinct across systems, so nothing collides — a Cesaroni reload can't
@@ -63,6 +64,7 @@ for (const a of ADAPTERS) adaptersById.set(a.id, a);
 // or a source-less node is caught before it can surface as a wrong result on the page. The
 // full contract lives in ./validate. Cheap insurance for safety data.
 validateGraph({ cases: CASES, parts: PARTS, adapters: ADAPTERS, reloads: RELOADS });
+validateCrossloads(CROSSLOAD_PAIRS, CASES);
 
 // --- Accessors --------------------------------------------------------------
 export const allCases = (): MotorCase[] => CASES.slice();
