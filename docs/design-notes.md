@@ -248,6 +248,17 @@ tool (the existing `?have=…` deep link), so search traffic lands on a real ans
 live version. It mirrors the Motor Finder's per-motor pages, and the entity — not "Muster" — is each
 page's `h1`. A `sitemap.test.ts` holds the sitemap to the data, so a new entity can't ship undiscoverable.
 
+Each entity page also carries **schema.org structured data** (`lib/jsonld.ts`, pure and tested),
+mirroring the Motor Finder again: one `@graph` per page with a `Product` node (name, SKU/MPN, brand,
+category, and the entity's real facts as `additionalProperty` — impulse class, total impulse, thrust,
+propellant, certification for a reload; diameter and max impulse for a case) plus the page's
+`BreadcrumbList`. The one deliberate divergence from the Motor Finder is that Muster's Product carries
+**no `offers`** — Muster has no price or stock data, and fabricating an Offer would be both unsourced
+and misleading for a safety-framed shopping aid; the "check stock & pricing" link hands that job to the
+Motor Finder, which does have it. `jsonld.test.ts` runs the Product invariants over the whole catalog
+(valid brand, designation-as-SKU, no non-null-value property, and never an Offer), and the e2e suite
+asserts the Product renders on a real case and reload page.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the

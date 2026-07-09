@@ -167,6 +167,13 @@ test("deep-linked case page: static content, cross-links to reloads, and a CTA i
   await expect(page.getByRole("heading", { level: 1, name: "RMS-38/360" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
 
+  // Structured data: the case is a Product (mirroring the Motor Finder), with its designation as
+  // the SKU — and, since Muster has no price data, carrying no Offer.
+  const caseLd = await page.locator('script[type="application/ld+json"]').first().textContent();
+  expect(caseLd).toContain('"@type":"Product"');
+  expect(caseLd).toContain('"sku":"RMS-38/360"');
+  expect(caseLd?.toLowerCase()).not.toContain("offer");
+
   // A reload it flies links to that reload's own page.
   const reloadLink = page.getByRole("link", { name: /I161W/ }).first();
   await expect(reloadLink).toHaveAttribute("href", "/reload/at-i161w");
@@ -182,6 +189,12 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
 
   await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cases that fly it" })).toBeVisible();
+
+  // Structured data: the reload is a Product, keyed by designation, with no fabricated Offer.
+  const reloadLd = await page.locator('script[type="application/ld+json"]').first().textContent();
+  expect(reloadLd).toContain('"@type":"Product"');
+  expect(reloadLd).toContain('"sku":"I161W"');
+  expect(reloadLd?.toLowerCase()).not.toContain("offer");
 
   // The page answers "what to buy" on its own: the reusable hardware + the reload kit.
   await expect(page.getByRole("heading", { name: "What you need to fly it" })).toBeVisible();
