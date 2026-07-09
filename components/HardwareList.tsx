@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { MotorCase, Reload } from "@/lib/data/types";
-import { shoppingList, type FitKind } from "@/lib/resolve";
+import { shoppingList, shoppingListText, type FitKind } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 
@@ -23,28 +23,9 @@ export default function HardwareList({
   const list = shoppingList(motorCase, reload, fit, spacers);
   const [copied, setCopied] = useState(false);
 
-  const asText = () => {
-    const lines: string[] = [];
-    lines.push(`Muster — ${reload.designation} in a ${motorCase.designation} case`);
-    lines.push("");
-    lines.push("Reusable hardware to own:");
-    for (const i of list.reusable) {
-      lines.push(`  • ${i.name}${i.partNumber ? ` (${i.partNumber})` : ""}${i.detail ? ` — ${i.detail}` : ""}`);
-    }
-    lines.push("");
-    lines.push("Single-use reload to buy:");
-    lines.push(`  • ${list.consumable.name}${list.consumable.detail ? ` — ${list.consumable.detail}` : ""}`);
-    lines.push("");
-    lines.push("Notes:");
-    for (const n of list.notes) lines.push(`  • ${n}`);
-    lines.push("");
-    lines.push("Always build to the reload's printed instructions. Muster is a shopping aid.");
-    return lines.join("\n");
-  };
-
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(asText());
+      await navigator.clipboard.writeText(shoppingListText(list));
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {

@@ -309,6 +309,30 @@ export function shoppingList(
   return { motorCase, reload, fit, spacers, reusable, consumable, notes };
 }
 
+/** A plain-text rendering of a shopping list, for pasting into a club chat or an order. Kept pure
+ *  and tested beside `shoppingList` rather than inline in the copy button: the exported text is a
+ *  user-facing artifact, and its closing line — that the reload's printed instructions are the
+ *  authority and Muster is only a shopping aid — is load-bearing safety framing that must never
+ *  quietly fall out of a copied list. */
+export function shoppingListText(list: ShoppingList): string {
+  const lines: string[] = [];
+  lines.push(`Muster — ${list.reload.designation} in a ${list.motorCase.designation} case`);
+  lines.push("");
+  lines.push("Reusable hardware to own:");
+  for (const i of list.reusable) {
+    lines.push(`  • ${i.name}${i.partNumber ? ` (${i.partNumber})` : ""}${i.detail ? ` — ${i.detail}` : ""}`);
+  }
+  lines.push("");
+  lines.push("Single-use reload to buy:");
+  lines.push(`  • ${list.consumable.name}${list.consumable.detail ? ` — ${list.consumable.detail}` : ""}`);
+  lines.push("");
+  lines.push("Notes:");
+  for (const n of list.notes) lines.push(`  • ${n}`);
+  lines.push("");
+  lines.push("Always build to the reload's printed instructions. Muster is a shopping aid.");
+  return lines.join("\n");
+}
+
 // --- Small helpers used by the UI ------------------------------------------
 
 /** Human label for a fit, e.g. "Direct fit" or "With 1 spacer (38RAS)". */

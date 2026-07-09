@@ -4,6 +4,7 @@ import {
   resolveCase,
   resolveReload,
   shoppingList,
+  shoppingListText,
   fitLabel,
   certLabel,
   coverageFor,
@@ -158,6 +159,46 @@ describe("shoppingList", () => {
     const note = list.notes.find((n) => n.toLowerCase().includes("out of production"));
     expect(note).toBeDefined();
     expect(note!.toLowerCase()).toContain("not the same as decertified");
+  });
+});
+
+describe("shoppingListText (the copy-to-clipboard artifact)", () => {
+  it("renders the header, every reusable part, the reload, and every note", () => {
+    const c = requireCase("RMS-38/480"); // has a seal disc, so several reusable parts
+    const r = reloadsForCase("RMS-38/480")[0];
+    const list = shoppingList(c, r, "native", 0);
+    const text = shoppingListText(list);
+
+    expect(text).toContain(`Muster — ${r.designation} in a ${c.designation} case`);
+    // Every reusable item's name is present, and any part number is carried in parentheses.
+    for (const item of list.reusable) {
+      expect(text).toContain(item.name);
+      if (item.partNumber) expect(text).toContain(`(${item.partNumber})`);
+    }
+    expect(text).toContain(list.consumable.name);
+    for (const n of list.notes) expect(text).toContain(n);
+  });
+
+  it("always ends with the conservative authority line — the safety framing can't fall out of a copy", () => {
+    // Guard across a spread of systems and fit kinds, since the copied text is what leaves the site.
+    const samples = [
+      shoppingList(requireCase("RMS-38/240"), reloadsForCase("RMS-38/240")[0], "native", 0),
+      shoppingList(requireCase("RMS-38/360"), reloadsForCase("RMS-38/240")[0], "adapter", 1),
+      shoppingList(caseByDesignation("Pro38-3G")!, resolveCase(caseByDesignation("Pro38-3G")!).native[0].reload, "native", 0),
+    ];
+    for (const list of samples) {
+      const lines = shoppingListText(list).split("\n");
+      const last = lines[lines.length - 1];
+      expect(last).toContain("printed instructions");
+      expect(last).toContain("shopping aid");
+    }
+  });
+
+  it("carries the spacer note for a spacer fit", () => {
+    const list = shoppingList(requireCase("RMS-38/360"), reloadsForCase("RMS-38/240")[0], "adapter", 1);
+    const text = shoppingListText(list);
+    expect(text).toContain("38RAS");
+    expect(text.toLowerCase()).toContain("spacer");
   });
 });
 
