@@ -92,6 +92,15 @@ confirm the exact combination against the instructions") rather than a fabricate
 honest, conservative line: resolve what's sourced, advise where it isn't, and never assert a
 step I can't back.
 
+Both resolved tables were re-verified against primary manufacturer sources (2026-07): AeroTech's
+published 38RAS chart (every case→case step, the 38/240–720 range, and the 38/1080 / 38/1320
+exclusion) and Cesaroni's own instruction sheets (the verbatim "up to two spacers, one or two
+sizes shorter" rule for Pro29/38/54) — all confirmed correct. The audit surfaced only a stale
+source link (AeroTech's 38RAS product page had 404'd; swapped for two live vendor pages that carry
+the chart) and the **6GXL exception**, which the model already handles by leaving 6GXL cases
+advisory rather than resolved — Cesaroni needs a dedicated XL spacer there (a regular spacer on
+Pro29), not the standard step.
+
 ### Safety, carried the way the family carries it
 
 This is more safety-critical than the calculators — a wrong edge can mean an incompatible

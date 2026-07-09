@@ -26,8 +26,11 @@ const S = {
   rms98: "https://aerotech-rocketry.com/collections/a-rms-98-hardware",
   ras38Apogee:
     "https://www.apogeerockets.com/Rocket_Motors/AeroTech_Accessories/AeroTech_38mm_Reload_Adapter_System",
-  ras38AeroTech:
-    "https://aerotech-rocketry.com/products/product_5a773ba0-68eb-df1a-37bf-817f3077b35a",
+  // Both pages reproduce AeroTech's published 38RAS compatibility chart. (AeroTech's own product
+  // page for the 38RAS is currently unpublished/404, so we cite the two live vendor pages that
+  // carry the manufacturer's chart verbatim.)
+  ras38Rocketarium:
+    "https://www.rocketarium.com/High-Power-Rocketry/Motors/38/Reload-Adapter-System",
   ras29: "https://aerotech-rocketry.com/products/product_55be7e62-30b0-ee39-6e36-62265b43fdc6",
   ras54: "https://www.siriusrocketry.biz/ishop/54mm-reload-adapter-system-585.html",
   ras75: "https://www.apogeerockets.com/Rocket-Motors/AeroTech-Accessories/AeroTech-75mm-Reload-Adapter-System",
@@ -96,8 +99,8 @@ export const ADAPTERS: AdapterSystem[] = [
       { baseCase: "RMS-38/240", spacers: 1, fliesCase: "RMS-38/120" },
     ],
     advisoryOnly: false,
-    sources: [S.ras38Apogee, S.ras38AeroTech],
-    notes: "Works with the 38/240 through 38/720 cases. It does NOT work with the 38/1080 or 38/1320 cases. Maximum two spacers per motor.",
+    sources: [S.ras38Apogee, S.ras38Rocketarium],
+    notes: "Works with the 38/240 through 38/720 cases. It does NOT work with the 38/1080 or 38/1320 cases. AeroTech recommends a maximum of two spacers per motor.",
   },
   {
     id: "ras-29",
