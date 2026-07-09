@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { Reload } from "./data/types";
 import { allCases, allReloads, caseByDesignation } from "./graph";
 import { resolveCase, resolveReload, shoppingList } from "./resolve";
 
@@ -100,6 +101,71 @@ describe("shoppingList — holds for every case + its native reload", () => {
       for (const item of [...list.reusable, list.consumable]) {
         expect(item.sources.length, `${item.name} has no source`).toBeGreaterThan(0);
         for (const s of item.sources) expect(s).toMatch(/^https?:\/\//);
+      }
+    }
+  });
+});
+
+describe("shoppingList — the conservative safety notes fire for every reload that needs them", () => {
+  // Muster frames conservatively (a wrong or missing warning is a safety problem, not a typo).
+  // These notes are the load-bearing cautions a flyer relies on; the spot tests above check one
+  // example each, but a resolver refactor could silently drop a note for a whole *class* of
+  // reloads. Guard each across the WHOLE catalog, keyed off the same flag the note is.
+  const listFor = (r: Reload) => shoppingList(caseByDesignation(r.caseInfo)!, r, "native", 0);
+
+  it("every plugged reload is flagged electronic-deployment-only, and never claims an ejection charge", () => {
+    const plugged = RELOADS.filter((r) => !r.ejectionCharge);
+    expect(plugged.length).toBeGreaterThan(0);
+    for (const r of plugged) {
+      const list = listFor(r);
+      expect(
+        list.notes.some((n) => n.toLowerCase().includes("electronic deployment")),
+        `${r.designation} lacks the electronic-deployment note`,
+      ).toBe(true);
+      const detail = (list.consumable.detail ?? "").toLowerCase();
+      expect(detail).toContain("no ejection charge");
+      expect(detail).not.toContain(", and ejection charge");
+    }
+  });
+
+  it("every sparky reload carries the field-restriction warning", () => {
+    const sparky = RELOADS.filter((r) => r.sparky);
+    expect(sparky.length).toBeGreaterThan(0);
+    for (const r of sparky) {
+      const notes = listFor(r).notes.map((n) => n.toLowerCase());
+      expect(
+        notes.some((n) => n.includes("sparky") && n.includes("restrict")),
+        `${r.designation} lacks the sparky field-restriction note`,
+      ).toBe(true);
+    }
+  });
+
+  it("every out-of-production reload is flagged, and never called decertified", () => {
+    const oop = RELOADS.filter((r) => r.availability === "OOP");
+    expect(oop.length).toBeGreaterThan(0);
+    for (const r of oop) {
+      const note = listFor(r).notes.find((n) => n.toLowerCase().includes("out of production"));
+      expect(note, `${r.designation} lacks the out-of-production note`).toBeTruthy();
+      expect(note!.toLowerCase()).toContain("not the same as decertified");
+    }
+  });
+
+  it("every Loki reload surfaces the graphite-nozzle throat-number constraint", () => {
+    const loki = RELOADS.filter((r) => r.system === "Loki");
+    expect(loki.length).toBeGreaterThan(0);
+    for (const r of loki) {
+      expect(
+        listFor(r).notes.some((n) => n.toLowerCase().includes("throat")),
+        `${r.designation} lacks the graphite-nozzle throat note`,
+      ).toBe(true);
+    }
+  });
+
+  it("no reload ever ships a blank or non-string note", () => {
+    for (const r of RELOADS) {
+      for (const n of listFor(r).notes) {
+        expect(typeof n).toBe("string");
+        expect(n.trim().length, `${r.designation} has a blank note`).toBeGreaterThan(0);
       }
     }
   });

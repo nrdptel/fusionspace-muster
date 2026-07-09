@@ -79,9 +79,14 @@ runs the safety invariants over the *whole* catalog — every reload resolves to
 matches its `caseInfo`; no fit ever crosses brand or diameter; every spacer fit fills a genuinely
 longer case with a shorter reload (never the reverse) using one or two spacers and never a reload
 the case already flies directly; the reload↔case mapping round-trips both ways; and every shopping
-list names the case, carries a sourced reusable item, and names the reload. The build-time contract
-catches a bad *node*; these catch a bad *edge in the resolver logic*, across all ~540 reloads and
-~88 cases rather than a hand-picked sample.
+list names the case, carries a sourced reusable item, and names the reload. It also guards the
+**conservative framing itself**, catalog-wide: every plugged reload's list flags electronic
+deployment (and never claims an ejection charge), every sparky reload carries the field-restriction
+warning, every out-of-production reload is flagged without being called decertified, every Loki
+reload surfaces the graphite-nozzle throat constraint, and no reload ever ships a blank note — so a
+resolver refactor can't quietly drop a load-bearing caution for a whole class of reloads. The
+build-time contract catches a bad *node*; these catch a bad *edge in the resolver logic*, across all
+~540 reloads and ~88 cases rather than a hand-picked sample.
 
 Two user-facing artifacts that leave the site are guarded the same way. The **copy-list** text — what
 someone pastes into a club chat or an order — is a pure `shoppingListText()` beside the resolver (not
