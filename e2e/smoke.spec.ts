@@ -334,3 +334,17 @@ test("a plugged reload is flagged as electronic-deployment only", async ({ page 
     page.locator("#shopping-list").getByText(/electronic deployment/),
   ).toBeVisible();
 });
+
+test("a sparky reload warns about field restrictions in the shopping list", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByRole("radio", { name: "I have a reload" }).click();
+  // H170M (38/360, Metalstorm) is sparky — metal-loaded, restricted at many fields for fire risk.
+  await page.getByRole("searchbox", { name: /Search reloads/ }).fill("H170M");
+  await page.getByRole("button", { name: /H170M/ }).first().click();
+  await expect(page.getByText("Sparky", { exact: true }).first()).toBeVisible();
+  await page.locator("#result").getByRole("button", { name: /RMS-38\/360/ }).first().click();
+  // The load-bearing safety note — not just the badge — reaches the shopping list.
+  await expect(
+    page.locator("#shopping-list").getByText(/many ranges restrict these/i),
+  ).toBeVisible();
+});
