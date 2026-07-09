@@ -73,6 +73,15 @@ list names the case, carries a sourced reusable item, and names the reload. The 
 catches a bad *node*; these catch a bad *edge in the resolver logic*, across all ~540 reloads and
 ~88 cases rather than a hand-picked sample.
 
+Two user-facing artifacts that leave the site are guarded the same way. The **copy-list** text — what
+someone pastes into a club chat or an order — is a pure `shoppingListText()` beside the resolver (not
+inline in the button), tested to carry every part, and to *always* end with the conservative authority
+line (build to the printed instructions; Muster is a shopping aid) so that framing can't quietly fall
+out of a copy. The **Motor Finder cross-link** is checked across the whole catalog: every reload must
+form a valid, single-segment URL with a known manufacturer slug, so a future ThrustCurve refresh can't
+introduce a designation that silently breaks the outbound link. Both clipboard flows (copy list, share
+view) are also driven in the e2e suite, which reads the clipboard back and asserts the contents.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them

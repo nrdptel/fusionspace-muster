@@ -100,6 +100,27 @@ test("a shared link restores the exact view", async ({ page }) => {
   await expect(page.locator("#shopping-list").getByText("RMS-38/360 case", { exact: true })).toBeVisible();
 });
 
+test("the shopping list and the current view copy to the clipboard", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/?have=case&case=rms-38-360&pick=at-i161w", { waitUntil: "networkidle" });
+
+  // Copy list → a plain-text shopping list, with the part number and the safety line intact.
+  await page.locator("#shopping-list").getByRole("button", { name: "Copy list" }).click();
+  await expect(page.getByRole("button", { name: "Copied ✓" })).toBeVisible();
+  const listText = await page.evaluate(() => navigator.clipboard.readText());
+  expect(listText).toContain("Muster — I161W in a RMS-38/360 case");
+  expect(listText).toContain("38FCC"); // a reusable-part number is carried through
+  expect(listText).toContain("I161W reload kit");
+  expect(listText.split("\n").at(-1)).toContain("printed instructions"); // the authority line survives
+
+  // Share this view → the current, selection-bearing URL.
+  await page.getByRole("button", { name: "Share this view" }).click();
+  await expect(page.getByRole("button", { name: "Link copied ✓" })).toBeVisible();
+  const shared = await page.evaluate(() => navigator.clipboard.readText());
+  expect(shared).toContain("case=rms-38-360");
+  expect(shared).toContain("pick=at-i161w");
+});
+
 test("reload → cases, including a spacer fit that adds the adapter", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
