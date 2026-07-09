@@ -1,8 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { allAdapters, allCases, diametersFor, manufacturers, SYSTEM_LABEL } from "@/lib/graph";
 import { coverageFor, unlockSuggestions, type OwnedKit } from "@/lib/resolve";
+import type { Manufacturer, Reload } from "@/lib/data/types";
+import { formatImpulse, propLabel } from "@/lib/format";
+import { PluggedBadge, SparkyBadge } from "./badges";
+import { Disclosure } from "./ui";
+
+const MFR_ORDER: Record<Manufacturer, number> = { AeroTech: 0, Cesaroni: 1, Loki: 2 };
+
+/** Group the flyable reloads by system then diameter (matching the owned-hardware selectors),
+ *  ascending by impulse within each, so the "what your kit flies" list reads the way the kit
+ *  was assembled. */
+function groupReloads(reloads: Reload[]): { mfr: Manufacturer; d: number; reloads: Reload[] }[] {
+  const sorted = [...reloads].sort(
+    (a, b) =>
+      MFR_ORDER[a.manufacturer] - MFR_ORDER[b.manufacturer] ||
+      a.diameter - b.diameter ||
+      a.totImpulseNs - b.totImpulseNs,
+  );
+  const groups: { mfr: Manufacturer; d: number; reloads: Reload[] }[] = [];
+  for (const r of sorted) {
+    const last = groups[groups.length - 1];
+    if (last && last.mfr === r.manufacturer && last.d === r.diameter) last.reloads.push(r);
+    else groups.push({ mfr: r.manufacturer, d: r.diameter, reloads: [r] });
+  }
+  return groups;
+}
 
 const KEY = "muster.kit";
 
@@ -63,6 +89,8 @@ export default function KitPlanner() {
   // Reloads flyable, grouped by diameter, for the summary breakdown.
   const byDiameter = new Map<number, number>();
   for (const r of cov.reloads) byDiameter.set(r.diameter, (byDiameter.get(r.diameter) ?? 0) + 1);
+  // The full flyable list, grouped by system + diameter, for the browsable breakdown.
+  const reloadGroups = groupReloads(cov.reloads);
 
   return (
     <section id="kit" className="mt-14 border-t border-zinc-200 pt-10 dark:border-zinc-800">
@@ -149,6 +177,7 @@ export default function KitPlanner() {
           Select the cases and adapters you own to see what your kit flies.
         </p>
       ) : (
+        <>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {/* Coverage. */}
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-5 dark:bg-emerald-500/5">
@@ -226,6 +255,42 @@ export default function KitPlanner() {
             )}
           </div>
         </div>
+
+        {/* The actual reloads the kit flies — browsable, each linking to its own page. */}
+        {cov.reloads.length > 0 && (
+          <Disclosure summary={`Show all ${cov.reloads.length} flyable reload${cov.reloads.length === 1 ? "" : "s"}`}>
+            <div className="space-y-4">
+              {reloadGroups.map((g) => (
+                <div key={`${g.mfr}-${g.d}`}>
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    {SYSTEM_LABEL[g.mfr]} · {g.d} mm{" "}
+                    <span className="font-normal normal-case tracking-normal">({g.reloads.length})</span>
+                  </h4>
+                  <ul className="mt-2 grid list-none gap-1.5 sm:grid-cols-2">
+                    {g.reloads.map((r) => (
+                      <li key={r.id}>
+                        <Link
+                          href={`/reload/${r.id}`}
+                          className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 transition hover:border-indigo-400 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:border-indigo-500/60"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span className="font-mono text-xs font-medium text-zinc-800 dark:text-zinc-200">{r.designation}</span>
+                            <PluggedBadge reload={r} />
+                            <SparkyBadge reload={r} />
+                          </span>
+                          <span className="text-[11px] tabular-nums text-zinc-500 dark:text-zinc-400">
+                            {formatImpulse(r.totImpulseNs)} · {propLabel(r)}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </Disclosure>
+        )}
+        </>
       )}
     </section>
   );
