@@ -13,10 +13,28 @@ test("home loads cleanly and the header + safety note render", async ({ page }) 
   // Safety is the headline, not the fine print.
   await expect(page.getByText("Muster is a shopping aid, not an assembly guide.")).toBeVisible();
   // The two directions are offered up front.
-  await expect(page.getByRole("button", { name: "I have a case" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "I have a reload" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "I have a case" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "I have a reload" })).toBeVisible();
 
   expect(errors).toEqual([]);
+});
+
+test("the mode toggle is a keyboard-navigable radio group", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const caseRadio = page.getByRole("radio", { name: "I have a case" });
+  const reloadRadio = page.getByRole("radio", { name: "I have a reload" });
+  await expect(caseRadio).toHaveAttribute("aria-checked", "true");
+
+  // Arrow-key from the checked radio selects the next option and moves focus with it…
+  await caseRadio.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(reloadRadio).toHaveAttribute("aria-checked", "true");
+  await expect(reloadRadio).toBeFocused();
+  await expect(page.getByRole("searchbox", { name: /Search reloads/ })).toBeVisible();
+
+  // …and back the other way.
+  await page.keyboard.press("ArrowLeft");
+  await expect(caseRadio).toHaveAttribute("aria-checked", "true");
 });
 
 test("case → reloads → shopping list (the core loop)", async ({ page }) => {
@@ -66,7 +84,7 @@ test("a shared link restores the exact view", async ({ page }) => {
 test("reload → cases, including a spacer fit that adds the adapter", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "I have a reload" }).click();
+  await page.getByRole("radio", { name: "I have a reload" }).click();
   await page.getByRole("searchbox", { name: /Search reloads/ }).fill("I161W");
 
   // Pick the reload from the results.
@@ -98,7 +116,7 @@ test("Cesaroni Pro: system toggle → case → cartridge shopping list", async (
   await page.goto("/", { waitUntil: "networkidle" });
 
   // Switch the case picker to the Cesaroni Pro system.
-  await page.getByRole("button", { name: "Cesaroni Pro" }).click();
+  await page.getByRole("radio", { name: "Cesaroni Pro" }).click();
 
   // Pick a Pro38 3-grain case (the picker grid button; the kit planner also lists it, so first()).
   await page.getByRole("button", { name: /Pro38-3G/ }).first().click();
@@ -120,8 +138,8 @@ test("Loki Research: system toggle → case → native-only shopping list with b
   await page.goto("/", { waitUntil: "networkidle" });
 
   // Switch the case picker to the Loki Research system, then the 76 mm diameter.
-  await page.getByRole("button", { name: "Loki Research" }).click();
-  await page.getByRole("button", { name: "76 mm", exact: true }).first().click();
+  await page.getByRole("radio", { name: "Loki Research" }).click();
+  await page.getByRole("radio", { name: "76 mm", exact: true }).first().click();
 
   // Pick a 76 mm Loki case (its designation is diameter/impulse, e.g. 76/6000).
   await page.getByRole("button", { name: /76\/6000/ }).first().click();
@@ -215,7 +233,7 @@ test("a busy case's reloads can be filtered and sorted", async ({ page }) => {
   expect(await rows.count()).toBeLessThan(before);
 
   // Sorting by thrust keeps the (filtered) list populated.
-  await result.getByRole("button", { name: "Thrust" }).click();
+  await result.getByRole("radio", { name: "Thrust" }).click();
   expect(await rows.count()).toBeGreaterThan(0);
 });
 
@@ -223,7 +241,7 @@ test("AeroTech 75 mm: a large-motor case → reloads → shopping list with a se
   await page.goto("/", { waitUntil: "networkidle" });
 
   // Default system is AeroTech RMS; switch the diameter filter to 75 mm.
-  await page.getByRole("button", { name: "75 mm", exact: true }).first().click();
+  await page.getByRole("radio", { name: "75 mm", exact: true }).first().click();
   await page.getByRole("button", { name: /RMS-75\/5120/ }).first().click();
   await expect(page.getByRole("heading", { name: /Reloads built for this case/ })).toBeVisible();
 
@@ -236,7 +254,7 @@ test("AeroTech 75 mm: a large-motor case → reloads → shopping list with a se
 
 test("a plugged reload is flagged as electronic-deployment only", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "I have a reload" }).click();
+  await page.getByRole("radio", { name: "I have a reload" }).click();
   // H999N (38/360, Warp 9) is plugged — no ejection charge.
   await page.getByRole("searchbox", { name: /Search reloads/ }).fill("H999N");
   await page.getByRole("button", { name: /H999N/ }).first().click();
