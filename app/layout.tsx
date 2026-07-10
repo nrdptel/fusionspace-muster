@@ -31,7 +31,9 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: "/" },
   icons: {
-    icon: { url: "/icon.svg", type: "image/svg+xml" },
+    // `sizes: "any"` marks the SVG as scalable so browsers prefer it over a bitmap favicon.ico —
+    // matching the manifest's own icon entry and the sibling tools' head markup.
+    icon: { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
     apple: { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
   },
   openGraph: {
