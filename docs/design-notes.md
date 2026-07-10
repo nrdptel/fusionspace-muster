@@ -97,6 +97,17 @@ form a valid, single-segment URL with a known manufacturer slug, so a future Thr
 introduce a designation that silently breaks the outbound link. Both clipboard flows (copy list, share
 view) are also driven in the e2e suite, which reads the clipboard back and asserts the contents.
 
+The **shared link itself** is the third artifact that leaves the site, and the pure encoder/decoder
+behind it (`lib/state.ts`) is now round-trip tested catalog-wide (`lib/state.test.ts`). "A resolved
+view is a link you can share" is a core promise, but that module had been the one load-bearing pure
+file with no test: every real case and reload selection (with and without a picked result) must survive
+`toQuery`→`parseState` unchanged; the encoder must never leak the *other* direction's id into the URL
+(so a shared link can't resurrect a stale selection); and a hand-edited, `utm`-decorated, or
+both-ids-set legacy link must self-heal to a canonical selection rather than corrupt the view. The
+contract is deliberately opaque about whether an id *exists* — that's the resolver's job, and the
+component already renders nothing for an unknown id — so the round-trip holds for any string, which is
+what keeps a ThrustCurve refresh from quietly breaking sharing.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
@@ -288,6 +299,11 @@ isn't buyable or sourceable. So the catalog is effectively complete for the curr
 new *system* now depends on an external change (a dormant maker returning with a published catalog, or a
 new sourceable entrant), and near-term value stays in correctness, hardening, tests, and consistency on
 what's shipped.
+
+**Ecosystem watch (2026-07):** the hub now lists a new tool, **Loft** (loft.fusionspace.co), alongside
+Debrief under "in development." Muster's footer links only the *live* siblings (Motor Finder, Charge,
+Window — the `SIBLING_TOOLS` list in `lib/links.ts`), so nothing changes yet. When Loft actually goes
+live, add it there — the one small consistency follow-up waiting on an external event.
 
 ### The kit planner (companion tool)
 
