@@ -332,7 +332,21 @@ what's shipped.
 **Ecosystem watch (2026-07):** the hub now lists a new tool, **Loft** (loft.fusionspace.co), alongside
 Debrief under "in development." Muster's footer links only the *live* siblings (Motor Finder, Charge,
 Window — the `SIBLING_TOOLS` list in `lib/links.ts`), so nothing changes yet. When Loft actually goes
-live, add it there — the one small consistency follow-up waiting on an external event.
+live, add it there — the one small consistency follow-up waiting on an external event. A head-tag audit
+against the live siblings (2026-07) otherwise found parity — Muster carries the same OG/Twitter/PWA
+markup and, on the home page, more structured data than the Motor Finder — with one drift since fixed:
+the SVG favicon now declares `sizes="any"` in the head, matching the manifest and the siblings.
+
+**Maturity note (2026-07):** the tool is at a plateau. Content is tapped out (new systems blocked on an
+external change); the data is freshly audited and now guarded on both the source mirror
+(`lib/data/reloads.test.ts`) and the merged graph (`lib/validate.ts`); the URL/sharing contract, the
+resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
+tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
+page in light and dark; the head/PWA markup is at sibling parity. Remaining known candidates are small
+(the last untested helper, `lib/og-mark.ts`) or externally blocked (a fourth system; the Loft footer
+link). The next *substantial* investment would need to be a deliberate scope decision — e.g. a new
+user-facing capability the maintainer wants (physical case/reload dimensions for airframe fit; a
+print-friendly shopping list) — rather than more hardening of what's already solid.
 
 ### The kit planner (companion tool)
 
