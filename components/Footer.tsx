@@ -14,7 +14,7 @@ export default function Footer() {
   const observances = observancesForDate();
   return (
     <footer className="mt-20 border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 md:mt-28">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <a
             href={REPO_URL}
@@ -114,7 +114,7 @@ export default function Footer() {
       </p>
 
       {observances.length > 0 && (
-        <div className="mt-5 space-y-1">
+        <div className="mt-5 space-y-1 print:hidden">
           {observances.map((o) => (
             <p key={o.id} className="text-zinc-500 dark:text-zinc-400">
               <span aria-hidden="true">{o.emoji}</span> {o.message}

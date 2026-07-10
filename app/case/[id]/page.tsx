@@ -125,7 +125,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
       )}
       {c.notes && <p className="mt-2 max-w-3xl text-xs text-zinc-500 dark:text-zinc-400">{c.notes}</p>}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="mt-5 flex flex-wrap items-center gap-3 print:hidden">
         <Link
           href={toolHref}
           className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
