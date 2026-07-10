@@ -22,7 +22,9 @@ export default function EntityFrame({ children }: { children: React.ReactNode })
             Motor-hardware compatibility for high-power rocketry
           </p>
         </div>
-        <ThemeToggle />
+        <div className="print:hidden">
+          <ThemeToggle />
+        </div>
       </header>
       {children}
       <Footer />

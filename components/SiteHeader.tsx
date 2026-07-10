@@ -14,7 +14,7 @@ export default function SiteHeader() {
           need, and the full shopping list to fly. Or start from a reload and work back.
         </p>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-2">
+      <div className="flex shrink-0 flex-col items-end gap-2 print:hidden">
         <ThemeToggle />
         <KofiButton />
       </div>

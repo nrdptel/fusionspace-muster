@@ -344,9 +344,23 @@ resolver invariants, and the always-rendered observance chrome (`lib/observances
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
 page in light and dark; the head/PWA markup is at sibling parity. Remaining known candidates are small
 (the last untested helper, `lib/og-mark.ts`) or externally blocked (a fourth system; the Loft footer
-link). The next *substantial* investment would need to be a deliberate scope decision — e.g. a new
-user-facing capability the maintainer wants (physical case/reload dimensions for airframe fit; a
-print-friendly shopping list) — rather than more hardening of what's already solid.
+link). The next *substantial* investment would need to be a deliberate scope decision — e.g. physical
+case/reload dimensions for airframe fit — rather than more hardening of what's already solid.
+
+### Print — a paper parts sheet
+
+Chosen off that maturity note as the first substantial user-facing capability: the tool had no print
+styles at all, yet its whole job is a *shopping list*, and it's deliberately offline-capable "for a
+remote field or a vendor's booth." Printing is the paper analog. A single `@media print` block in
+`globals.css` makes any page a clean **black-on-white parts/reference sheet** regardless of the on-screen
+theme — tinted panels and shadows flattened, ink not wasted — and `print:hidden` drops the on-screen-only
+chrome (the theme toggle, the share/copy and "open in the tool" actions, the install/offline section, the
+service-worker toast, the footer's link row, the monthly observance bar). The **deep-link `/case/[id]` and
+`/reload/[id]` pages are the intended printable artifact** — self-contained static content — so a flyer can
+`File → Print` a reload's page and get the hardware to buy, the part numbers, the conservative notes, and
+the **safety authority line** (kept on paper by design) to take to the bench. No new data, no sourcing
+risk — it's presentation of already-sourced content. An e2e test (`e2e/print.spec.ts`) drives the print
+media type and asserts the split: reference content prints, interactive chrome doesn't.
 
 ### The kit planner (companion tool)
 

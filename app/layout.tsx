@@ -90,7 +90,7 @@ export default function RootLayout({
             key={i}
             aria-hidden
             title={b.title}
-            className="h-1.5 w-full shrink-0"
+            className="h-1.5 w-full shrink-0 print:hidden"
             style={{ background: b.background }}
           />
         ))}

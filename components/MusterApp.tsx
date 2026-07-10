@@ -121,7 +121,7 @@ export default function MusterApp() {
           ]}
         />
         {hasResult && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 print:hidden">
             {pagePath && (
               <a
                 href={pagePath}

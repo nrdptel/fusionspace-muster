@@ -42,7 +42,7 @@ export default function InstallHint() {
   };
 
   return (
-    <section id="offline" className="mt-10">
+    <section id="offline" className="mt-10 print:hidden">
       <details className="group rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
         <summary className="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-300">
           Use it offline &amp; install it
