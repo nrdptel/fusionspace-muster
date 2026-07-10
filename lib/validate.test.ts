@@ -154,6 +154,14 @@ describe("validateGraph — reference integrity", () => {
     expect(() => validateGraph(g)).toThrow(/references unknown adapter/);
   });
 
+  it("rejects an orphan case that no reload is built for", () => {
+    const g = base();
+    // Add a case with a distinct designation that no reload references — it would resolve to an
+    // empty result and headline ≈0 N·s.
+    g.cases.push(mkCase({ id: "rms-38-999", designation: "RMS-38/999" }));
+    expect(() => validateGraph(g)).toThrow(/has no native reload/);
+  });
+
   it("rejects an adapter rule pointing at an unknown case", () => {
     const g = baseWithAdapter();
     g.adapters[0].rules[0].fliesCase = "RMS-38/000";
@@ -249,10 +257,27 @@ describe("validateGraph — sourcing", () => {
   });
 });
 
+describe("validateGraph — system integrity", () => {
+  it("rejects a case whose system disagrees with its manufacturer", () => {
+    const g = base();
+    g.cases[0].system = "Pro"; // AeroTech case can't be a Pro system
+    expect(() => validateGraph(g)).toThrow(/pairs AeroTech with system "Pro" \(expected "RMS"\)/);
+  });
+
+  it("rejects a reload whose system disagrees with its manufacturer", () => {
+    const g = base();
+    g.reloads[0].system = "Loki"; // AeroTech reload can't be a Loki system
+    expect(() => validateGraph(g)).toThrow(/pairs AeroTech with system "Loki" \(expected "RMS"\)/);
+  });
+});
+
 describe("validateGraph — reload consistency", () => {
   it("rejects a reload whose brand disagrees with its case", () => {
     const g = base();
+    // Keep the reload internally consistent (Cesaroni ↔ Pro) so the system-integrity check passes
+    // and the brand-vs-case check is what fires — the reload is still built for an AeroTech case.
     g.reloads[0].manufacturer = "Cesaroni";
+    g.reloads[0].system = "Pro";
     expect(() => validateGraph(g)).toThrow(/is built for case .* \(AeroTech\)/);
   });
 
