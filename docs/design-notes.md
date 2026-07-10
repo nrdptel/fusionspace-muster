@@ -222,8 +222,13 @@ AeroTech's crossload announcement and advisory — the research that turned up t
 is why the two directions aren't shown as symmetric.
 
 The deferred, still-sourced neighbours (noted for later): Loki's 98 mm liner sets for foreign cases
-(no published reload-level recipe), and RouseTech / Dr. Rocket as RMS aliases (licensed, but
-community-attested rather than a crisp manufacturer statement).
+(no published reload-level recipe), and RouseTech / Dr. Rocket as RMS aliases. The RouseTech/Dr. Rocket
+aliasing was re-checked (2026-07) and stays deferred: even the AeroTech case pages Muster already cites
+under a vendor's "Rouse-Tech Casings" section list the manufacturer as *AeroTech* and don't state the
+licensing relationship, so it remains community-attested — not a crisp manufacturer statement to assert
+against. Between this and the AMW review above, new *content* is effectively tapped out until a
+cleanly-sourceable system or a first-party aliasing statement appears; the near-term value is in
+hardening, tests, and consistency on what's already shipped.
 
 ### AMW (Animal Motor Works) — investigated 2026-07, deferred
 
