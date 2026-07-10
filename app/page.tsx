@@ -4,7 +4,8 @@ import KitPlanner from "@/components/KitPlanner";
 import Methodology from "@/components/Methodology";
 import InstallHint from "@/components/InstallHint";
 import Footer from "@/components/Footer";
-import { allCases, allReloads } from "@/lib/graph";
+import { allCases, allReloads, diameters, manufacturers, SYSTEM_LABEL } from "@/lib/graph";
+import { SITE_DESCRIPTION } from "@/lib/seo";
 
 // Mirror the origin the rest of the site derives (layout metadataBase, sitemap, robots) so a
 // fork setting NEXT_PUBLIC_SITE_URL gets structured data pointing at its own domain too.
@@ -17,11 +18,9 @@ const JSON_LD = {
   applicationCategory: "UtilitiesApplication",
   operatingSystem: "Any",
   url: siteUrl,
-  description:
-    "Motor-hardware compatibility for high-power rocketry. Match a reloadable AeroTech RMS, " +
-    "Cesaroni Pro, or Loki Research case to the reloads it flies — directly or with spacers — the " +
-    "closures each needs, the reload's certification status, and the complete hardware shopping " +
-    "list to fly. Works both directions: from a case, or from a reload.",
+  // One canonical app description, shared with the page metadata/OG (lib/seo) — a test there holds
+  // it to name every motor system, so the structured data can't drift a system behind the catalog.
+  description: SITE_DESCRIPTION,
   featureList: [
     "Case → compatible reloads (direct and spacer fits)",
     "Reload → the cases and hardware to fly it",
@@ -36,9 +35,13 @@ const JSON_LD = {
 };
 
 export default function Page() {
-  // Counts for the intro line — computed at build time from the bundled graph.
+  // The intro line is built from the graph, not hand-written, so it can't drift a system or a
+  // diameter behind the catalog (the exact drift that shipped once with the meta description).
   const caseCount = allCases().length;
   const reloadCount = allReloads().length;
+  const systemLabels = manufacturers().map((m) => SYSTEM_LABEL[m]);
+  const dias = diameters();
+  const [minDia, maxDia] = [dias[0], dias[dias.length - 1]];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 md:py-10">
@@ -76,12 +79,16 @@ export default function Page() {
       </div>
 
       <p className="mt-6 max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Covering <strong className="font-medium text-zinc-700 dark:text-zinc-300">AeroTech RMS</strong>,{" "}
-        <strong className="font-medium text-zinc-700 dark:text-zinc-300">Cesaroni Pro</strong>, and{" "}
-        <strong className="font-medium text-zinc-700 dark:text-zinc-300">Loki Research</strong> —{" "}
-        {caseCount} cases and {reloadCount} reloads from 24 to 98 mm. Pick your system and the case
-        you own to see everything it flies, or search for a reload to see the hardware it needs.
-        Everything resolves to one clear shopping list, and each part links to its source.
+        Covering{" "}
+        {systemLabels.map((label, i) => (
+          <span key={label}>
+            {i > 0 && (i === systemLabels.length - 1 ? (systemLabels.length > 2 ? ", and " : " and ") : ", ")}
+            <strong className="font-medium text-zinc-700 dark:text-zinc-300">{label}</strong>
+          </span>
+        ))}{" "}
+        — {caseCount} cases and {reloadCount} reloads from {minDia} to {maxDia} mm. Pick your system
+        and the case you own to see everything it flies, or search for a reload to see the hardware it
+        needs. Everything resolves to one clear shopping list, and each part links to its source.
       </p>
 
       <MusterApp />

@@ -16,6 +16,13 @@ test("home loads cleanly and the header + safety note render", async ({ page }) 
   await expect(page.getByRole("radio", { name: "I have a case" })).toBeVisible();
   await expect(page.getByRole("radio", { name: "I have a reload" })).toBeVisible();
 
+  // The intro line is built from the catalog: it names every current system and the diameter span.
+  const intro = page.getByText(/Covering .* cases and .* reloads from \d+ to \d+ mm/);
+  await expect(intro).toContainText("AeroTech RMS");
+  await expect(intro).toContainText("Cesaroni Pro");
+  await expect(intro).toContainText("Loki Research");
+  await expect(intro).toContainText("24 to 98 mm");
+
   expect(errors).toEqual([]);
 });
 
