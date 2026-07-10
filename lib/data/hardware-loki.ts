@@ -27,7 +27,7 @@
 // Sourcing: case → reload mapping is authoritative from ThrustCurve; the hardware model, case
 // lineup, and closure reuse are from Loki's own store pages and instruction PDFs.
 
-import type { Diameter, HardwarePart, MotorCase } from "./types";
+import type { HardwarePart, MotorCase } from "./types";
 
 const S = {
   tc: "https://www.thrustcurve.org",
@@ -69,7 +69,7 @@ export const LOKI_PARTS: HardwarePart[] = DIAMETERS.flatMap((d) => [
     id: `loki-fc-${d}`,
     kind: "forward-closure" as const,
     name: `${d} mm forward bulkhead`,
-    diameter: d as Diameter,
+    diameter: d,
     sources: [storeSrc[d], pdfSrc[d]],
     notes: "Reusable; shared across every case length in this diameter.",
   },
@@ -77,7 +77,7 @@ export const LOKI_PARTS: HardwarePart[] = DIAMETERS.flatMap((d) => [
     id: `loki-nz-${d}`,
     kind: "aft-closure" as const,
     name: `${d} mm graphite nozzle`,
-    diameter: d as Diameter,
+    diameter: d,
     sources: [storeSrc[d], pdfSrc[d]],
     notes:
       "Reusable graphite nozzle, sold by throat number — the correct throat for your reload is " +
@@ -93,7 +93,7 @@ export const LOKI_CASES: MotorCase[] = DIAMETERS.flatMap((d) =>
       designation,
       manufacturer: "Loki" as const,
       system: "Loki" as const,
-      diameter: d as Diameter,
+      diameter: d,
       slot: ns,
       slotLabel: `${ns}`,
       rangeCase: false,

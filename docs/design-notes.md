@@ -121,6 +121,22 @@ contract is deliberately opaque about whether an id *exists* — that's the reso
 component already renders nothing for an unknown id — so the round-trip holds for any string, which is
 what keeps a ThrustCurve refresh from quietly breaking sharing.
 
+Underneath all of that sits the **mirror itself** — `lib/data/reloads.json`, the largest body of
+safety-critical data and the one thing imported as *untyped* JSON, so the compiler never checks it.
+`lib/data/reloads.test.ts` is its integrity contract, run in CI on every push: it doesn't re-fetch,
+it holds the committed file to the shape a faithful ThrustCurve fetch produces, so a slip on the next
+manual refresh fails the gate instead of shipping. It proves the provenance header is present with a
+valid ISO `_fetched` date; that every `id` is the deterministic `"<at|cti|loki>-<slug(designation)>"`
+(the id *is* the `/reload/<id>` deep-link slug, so it must be derivable and collision-free); that every
+`tcUrl` resolves to that motor's own ThrustCurve page (a wrong one sends a flyer to the wrong specs)
+and every `motorId` is present and unique; and — the part TypeScript can't do for a cast JSON import —
+that every enumerated field (`manufacturer`, `diameter`, `availability`, `certOrg`) sits inside its
+type's domain and every impulse class actually appears in its designation. Building this surfaced a
+latent type gap: Loki markets its largest hardware as **76 mm** (AeroTech/Cesaroni use 75 mm), and the
+`Diameter` union had omitted 76 — the Loki data compiled only because an `as Diameter` cast forced it
+through. 76 is now in the union (and Cesaroni's grain ladder is keyed by *its* diameters, not the
+whole union, so it stays exhaustive without demanding a 76 mm Cesaroni size that doesn't exist).
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
