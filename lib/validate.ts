@@ -9,8 +9,17 @@
 // It's a pure function of its inputs (it builds its own indexes), which keeps it cheap to run
 // on every import and easy to test against deliberately-broken graphs.
 
-import type { AdapterSystem, HardwarePart, MotorCase, Reload } from "./data/types";
+import type { AdapterSystem, HardwarePart, Manufacturer, MotorCase, MotorSystem, Reload } from "./data/types";
 import type { CrossloadPair } from "./data/crossload";
+
+// manufacturer and reload system are a fixed pairing, not two free fields: AeroTech ships the RMS
+// assembled system, Cesaroni the Pro cartridge, Loki its own assembled system. The graph carries
+// both so a node reads clearly, but they must never disagree.
+const SYSTEM_FOR_MANUFACTURER: Record<Manufacturer, MotorSystem> = {
+  AeroTech: "RMS",
+  Cesaroni: "Pro",
+  Loki: "Loki",
+};
 
 export interface GraphInput {
   cases: MotorCase[];
@@ -32,9 +41,11 @@ function hasSources(sources: unknown): boolean {
  * Validate the whole merged graph, throwing on the first violation with a message that names
  * the offending node. Grouped by what a failure would mean:
  *   - reference integrity — nothing points at a node that doesn't exist;
+ *   - coverage — every case is flown by at least one native reload (no orphan case);
  *   - spacer safety — every adapter step fills a LONGER case with a SHORTER reload, 1–2 spacers;
  *   - identity — ids and designations are unique, so a lookup can't return the wrong part;
  *   - sourcing — every hardware node cites at least one source;
+ *   - system integrity — every case and reload pairs its manufacturer with the right system;
  *   - reload consistency — a reload agrees with its case on brand and diameter, and a plugged
  *     reload carries no ejection charge.
  */
@@ -58,6 +69,19 @@ export function validateGraph({ cases, parts, adapters, reloads }: GraphInput): 
     }
     if (c.adapter && !adapterIds.has(c.adapter)) {
       throw new Error(`graph: case ${c.designation} references unknown adapter "${c.adapter}".`);
+    }
+  }
+
+  // --- Coverage: no orphan case ---------------------------------------------
+  // A case no reload is built for resolves to an empty result, and because a case's displayed
+  // "up to ≈N·s" is lifted from the reloads it flies (graph.ts), an orphan case would headline
+  // "≈0 N·s". A shopping aid shouldn't list a case nothing loads — so every case must be flown by
+  // at least one native reload. (Reference integrity above already proved every reload's case
+  // exists; this proves the reverse direction.)
+  const caseInfos = new Set(reloads.map((r) => r.caseInfo));
+  for (const c of cases) {
+    if (!caseInfos.has(c.designation)) {
+      throw new Error(`graph: case ${c.designation} has no native reload — nothing resolves to it.`);
     }
   }
 
@@ -106,6 +130,23 @@ export function validateGraph({ cases, parts, adapters, reloads }: GraphInput): 
   for (const c of cases) if (!hasSources(c.sources)) throw new Error(`graph: case ${c.designation} has no valid source.`);
   for (const p of parts) if (!hasSources(p.sources)) throw new Error(`graph: part ${p.id} has no valid source.`);
   for (const a of adapters) if (!hasSources(a.sources)) throw new Error(`graph: adapter ${a.designation} has no valid source.`);
+
+  // --- System integrity -----------------------------------------------------
+  // The shopping list keys its wording off `system` — a Pro reload is a self-contained cartridge,
+  // a Loki reload leaves the nozzle reusable — so a node tagged with the wrong system silently
+  // mis-describes what a flyer buys even when its brand and diameter look right.
+  for (const c of cases) {
+    const want = SYSTEM_FOR_MANUFACTURER[c.manufacturer];
+    if (c.system !== want) {
+      throw new Error(`graph: case ${c.designation} pairs ${c.manufacturer} with system "${c.system}" (expected "${want}").`);
+    }
+  }
+  for (const r of reloads) {
+    const want = SYSTEM_FOR_MANUFACTURER[r.manufacturer];
+    if (r.system !== want) {
+      throw new Error(`graph: reload ${r.designation} pairs ${r.manufacturer} with system "${r.system}" (expected "${want}").`);
+    }
+  }
 
   // --- Reload consistency ---------------------------------------------------
   for (const r of reloads) {

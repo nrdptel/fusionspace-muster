@@ -67,12 +67,25 @@ The whole thing is a small graph in `lib/`:
 
 `lib/graph.ts` joins the two and **validates at build time** against a safety contract kept as
 one pure, tested function (`lib/validate.ts`). It fails `next build` on a reload pointing at an
-unknown case, an adapter rule that crosses diameters *or steps the wrong way* (a longer reload
-into a shorter case — the CATO-class edge), a duplicate id or designation, a hardware node with
-no source, or a reload whose brand/diameter disagrees with its case or whose plugged and
-ejection-charge flags contradict each other. The contract is pure so it can be unit-tested
-against deliberately-broken graphs, not just the real one. Cheap insurance for data that drives
-hardware buying.
+unknown case, a **case no reload is built for** (an orphan case that would resolve to an empty
+result), an adapter rule that crosses diameters *or steps the wrong way* (a longer reload into a
+shorter case — the CATO-class edge), a duplicate id or designation, a hardware node with no
+source, a case or reload whose **manufacturer and system disagree** (AeroTech↔RMS, Cesaroni↔Pro,
+Loki↔Loki — the shopping list keys its wording off `system`, so a wrong tag would silently
+mis-describe what you buy), or a reload whose brand/diameter disagrees with its case or whose
+plugged and ejection-charge flags contradict each other. The contract is pure so it can be
+unit-tested against deliberately-broken graphs, not just the real one. Cheap insurance for data
+that drives hardware buying.
+
+One check was **considered and rejected**: asserting a native reload's `totImpulseNs` never
+exceeds its case's `maxImpulseNs`. It looked like a clean "case is rated for what it flies" guard,
+but the data says otherwise — `maxImpulseNs` on the raw case records is a *nominal size label*
+(the number in `RMS-38/360`), and Cesaroni cases carry `0` outright, so 350 of ~540 reloads sit
+above their case's raw figure. `graph.ts` already resolves this by **lifting** each case's
+`maxImpulseNs` to at least the largest reload it flies (so the displayed "up to ≈N·s" can't
+contradict the list and is never `0` for a covered case) — which makes a strict ceiling check
+either tautological (post-lift) or false (pre-lift). The orphan-case guard is the useful part of
+that idea: it protects the *displayed* figure at its root by forbidding a case with no reloads.
 
 A second layer guards the **resolver's output**, not just the data: `lib/resolve.properties.test.ts`
 runs the safety invariants over the *whole* catalog — every reload resolves to a native case that
