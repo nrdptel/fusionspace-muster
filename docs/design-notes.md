@@ -260,6 +260,35 @@ Revisit only if AMW republishes a first-party hardware catalog (cases + closures
 retailer starts itemizing AMW closures in stock. Until then, the honest, conservative line holds: no
 system whose hardware graph can't be fully sourced, and no pointer at hardware you can't buy.
 
+### Gorilla Rocket Motors — investigated 2026-07, deferred
+
+The other snap-ring reloadable maker sometimes floated as a fourth system (a live, separate company
+from AMW and Loki, founded 2003). Architecturally it *would* fit Muster's case + reusable-closure +
+reload model — unlike the hybrid makers — but on the two bars that matter it's a clear **defer**:
+
+- **The whole line is out of production.** ThrustCurve lists 56 Gorilla reloads (38–152 mm, all with a
+  `caseInfo`) and marks **every one OOP** — zero in production. A shopping aid pointing only at buyable
+  hardware has nothing current to resolve to.
+- **The company is dormant and has no catalog to source from.** gorillarocketmotors.com is a
+  "back online soon" placeholder ("undergoing some major upgrades… limited reloads and hardware
+  currently available"), with no working store, no listed cases/closures/part numbers, and orders only
+  by email. The reusable-hardware graph can't be sourced to the every-node bar.
+
+Revisit if Gorilla brings its store and a first-party hardware catalog back online.
+
+### Content coverage, as of this assessment (2026-07)
+
+With AMW, Gorilla, and RouseTech/Dr. Rocket all investigated and deferred, the content lane is
+comprehensively assessed: **AeroTech RMS, Cesaroni Pro, and Loki Research are the currently-manufactured,
+sourceable, reloadable HPR systems that fit Muster's model** — and Muster covers all three. Everything
+else on ThrustCurve is out of scope by nature: the remaining HPR makers are **hybrids** (Hypertek,
+Contrail, RATT Works, West Coast Hybrids, Sky Ripper — a tank/injector/grain architecture, not
+case + closure + reload), or single-use / mid-power lines, or defunct/dormant brands whose hardware
+isn't buyable or sourceable. So the catalog is effectively complete for the current market; a genuinely
+new *system* now depends on an external change (a dormant maker returning with a published catalog, or a
+new sourceable entrant), and near-term value stays in correctness, hardening, tests, and consistency on
+what's shipped.
+
 ### The kit planner (companion tool)
 
 The lookup answers "given X, what fits?"; the planner answers "given everything I own, what can
