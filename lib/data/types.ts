@@ -13,7 +13,10 @@
 // printed instructions are always the authority on the hardware it needs; Muster never
 // asserts a combination the manufacturer doesn't support.
 
-export type Diameter = 24 | 29 | 38 | 54 | 75 | 98;
+// Nominal case diameters in millimetres. AeroTech and Cesaroni share 75 mm; Loki markets the same
+// class of hardware as 76 mm, and its cases/reloads carry that figure verbatim from ThrustCurve —
+// so both belong in the union (leaving 76 out only hid it behind `as Diameter` casts).
+export type Diameter = 24 | 29 | 38 | 54 | 75 | 76 | 98;
 
 export type ImpulseClass =
   | "A" | "B" | "C" | "D" | "E" | "F" | "G"

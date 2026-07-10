@@ -43,7 +43,10 @@ const S = {
 // Grain lengths present per diameter (from ThrustCurve's case field). `xl` marks the longer
 // 6-grain "6GXL" case, which is its own hardware.
 type Grain = { g: number; xl?: boolean };
-const LADDER: Record<Diameter, Grain[]> = {
+// Cesaroni's own diameters — 24 mm through 98 mm (75 mm, not Loki's 76 mm). The ladder is keyed by
+// these specifically, not the whole Diameter union, so it stays exhaustive over Cesaroni's sizes.
+type CtiDiameter = 24 | 29 | 38 | 54 | 75 | 98;
+const LADDER: Record<CtiDiameter, Grain[]> = {
   24: [{ g: 1 }, { g: 2 }, { g: 3 }, { g: 6 }],
   29: [{ g: 1 }, { g: 2 }, { g: 3 }, { g: 4 }, { g: 5 }, { g: 6 }, { g: 6, xl: true }],
   38: [{ g: 1 }, { g: 2 }, { g: 3 }, { g: 4 }, { g: 5 }, { g: 6 }, { g: 6, xl: true }],
@@ -99,7 +102,7 @@ export const CTI_PARTS: HardwarePart[] = [
 // a standard case of G grains flies (G-1) grains with one spacer and (G-2) grains with two.
 function spacerRules(d: number): SpacerRule[] {
   const rules: SpacerRule[] = [];
-  for (const { g, xl } of LADDER[d as Diameter]) {
+  for (const { g, xl } of LADDER[d as CtiDiameter]) {
     if (xl || g < 2) continue; // XL is advisory; a 1G case has nothing shorter
     if (g - 1 >= 1) rules.push({ baseCase: `Pro${d}-${g}G`, spacers: 1, fliesCase: `Pro${d}-${g - 1}G` });
     if (g - 2 >= 1) rules.push({ baseCase: `Pro${d}-${g}G`, spacers: 2, fliesCase: `Pro${d}-${g - 2}G` });
