@@ -5,6 +5,7 @@ import { resolveReload, type CaseFit } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { AvailabilityBadge, CertBadge, FitBadge, PluggedBadge, SparkyBadge } from "./badges";
+import AvailabilitySignal from "./Availability";
 import CrossloadCases from "./CrossloadCases";
 
 /** The result for "I want to fly this reload": the reload's spec and certification, then the
@@ -73,6 +74,7 @@ export default function ReloadResult({
           <SparkyBadge reload={reload} />
           <AvailabilityBadge reload={reload} />
         </div>
+        <AvailabilitySignal manufacturer={reload.manufacturer} designation={reload.designation} />
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
           <a
             href={checkStockUrl(reload)}
@@ -81,7 +83,7 @@ export default function ReloadResult({
             title={`See live stock and pricing for the ${reload.designation} on the HPR Motor Finder`}
             className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
-            Check stock &amp; pricing
+            Find it in stock
             <span aria-hidden>↗</span>
           </a>
           <a
