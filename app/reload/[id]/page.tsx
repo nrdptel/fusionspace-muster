@@ -8,6 +8,7 @@ import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadCases from "@/components/CrossloadCases";
 import EntityFrame from "@/components/EntityFrame";
+import AvailabilitySignal from "@/components/Availability";
 import { reloadJsonLd } from "@/lib/jsonld";
 
 export const dynamicParams = false;
@@ -131,7 +132,7 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
         >
-          Check stock &amp; pricing
+          Find it in stock
           <span aria-hidden>↗</span>
         </a>
         <a
@@ -190,6 +191,7 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
                 {nativeList.consumable.detail && (
                   <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{nativeList.consumable.detail}</p>
                 )}
+                <AvailabilitySignal manufacturer={r.manufacturer} designation={r.designation} />
               </div>
               {nativeList.notes.length > 0 && (
                 <ul className="mt-3 list-none space-y-1.5 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">

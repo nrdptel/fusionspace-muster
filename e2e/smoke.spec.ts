@@ -71,7 +71,7 @@ test("case → reloads → shopping list (the core loop)", async ({ page }) => {
   await expect(list.getByText(/aft closure/)).toBeVisible();
   await expect(list.getByText(/I161W reload kit/)).toBeVisible();
   // The single-use reload cross-links to the Motor Finder for where to buy it.
-  await expect(list.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+  await expect(list.getByRole("link", { name: /Find it in stock/ })).toHaveAttribute(
     "href",
     "https://motor.fusionspace.co/motor/aerotech/I161W",
   );
@@ -139,7 +139,7 @@ test("reload → cases, including a spacer fit that adds the adapter", async ({ 
   await expect(page.getByRole("heading", { name: "Cases that fly it" })).toBeVisible();
 
   // The spec card cross-links to the Motor Finder for live stock and pricing.
-  const stockLink = page.locator("#result").getByRole("link", { name: /Check stock & pricing/ });
+  const stockLink = page.locator("#result").getByRole("link", { name: /Find it in stock/ });
   await expect(stockLink).toHaveAttribute(
     "href",
     "https://motor.fusionspace.co/motor/aerotech/I161W",
@@ -208,7 +208,7 @@ test("Loki Research: system toggle → case → native-only shopping list with b
   await expect(list.getByText(/76 mm graphite nozzle/)).toBeVisible();
   await expect(list.getByText(/reload kit/)).toBeVisible();
   // The cross-link to the Motor Finder works for Loki too (lowercase manufacturer slug).
-  await expect(list.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+  await expect(list.getByRole("link", { name: /Find it in stock/ })).toHaveAttribute(
     "href",
     /motor\.fusionspace\.co\/motor\/loki\//,
   );
@@ -265,7 +265,7 @@ test("deep-linked reload page: cases that fly it link back, plus the stock cross
   // Its own case links to that case's page.
   await expect(page.getByRole("link", { name: /RMS-38\/360/ }).first()).toHaveAttribute("href", "/case/rms-38-360");
   // The Motor Finder cross-link is present with the right target.
-  await expect(page.getByRole("link", { name: /Check stock & pricing/ })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: /Find it in stock/ })).toHaveAttribute(
     "href",
     "https://motor.fusionspace.co/motor/aerotech/I161W",
   );
