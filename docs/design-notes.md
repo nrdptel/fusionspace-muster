@@ -344,12 +344,17 @@ resolver invariants, and the always-rendered observance chrome (`lib/observances
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
 page in light and dark; the head/PWA markup is at sibling parity. Two substantial user-facing moves have
 since come off this note by deliberate scope decision — **print** (paper parts sheet) and **live
-availability** from the Motor Finder (both below). Remaining known candidates: small ones (the last
-untested helper, `lib/og-mark.ts`); externally blocked ones (a fourth system; the Loft footer link);
-extending the availability badge to **case pages** once the Motor Finder exposes a **bulk availability
-endpoint** (today it would mean ~30 page fetches per case, so it's scoped to single-reload surfaces); and
-physical case/reload dimensions for airframe fit (a genuine scope decision — new sourced data, drifts
-toward a spec sheet).
+availability** from the Motor Finder (both below). Remaining known candidates are externally blocked or
+gated on a maintainer decision: a fourth motor system and the Loft footer link (both wait on an external
+change); extending the availability badge to **case pages** and cutting its per-view cost, both of which
+want a **bulk availability endpoint** on the Motor Finder (today it reads a ~114 KB page per reload, so
+it's scoped to single-reload surfaces); and physical case/reload dimensions for airframe fit (a genuine
+scope call — new sourced data that drifts toward a spec sheet). (`lib/og-mark.ts`, once listed here, is a
+generated base64 data-URI constant, not logic — nothing to test.) The small hardening within reach has
+been done: the availability fetch is now **bounded by a timeout** and its parser is guarded against the
+**real Motor Finder page shape** (a committed full-nesting fixture in `lib/availability.test.ts`), and the
+shipped parser was re-verified against the live page — it reads the real AeroTech I161W page as 9 vendors,
+4 in stock. Absent one of those external unblocks, further work here is polish, not a needle-mover.
 
 ### Print — a paper parts sheet
 

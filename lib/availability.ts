@@ -71,20 +71,33 @@ export function extractAvailability(html: string): Availability | null {
   return null;
 }
 
+// A hung Motor Finder response shouldn't leave the app's one network request pending indefinitely.
+// It's a best-effort supplementary signal, so bound the wait — a badge that would arrive many
+// seconds late is no use, and the fail-silent path turns a timeout into "no badge" like any error.
+const TIMEOUT_MS = 6000;
+
 /**
- * Fetch live availability for a reload from the Motor Finder. Client-side against a CORS-open source;
- * any failure resolves to null (never throws), so this is safe to call from a component effect and
- * safe to run offline — it just yields nothing.
+ * Fetch live availability for a reload from the Motor Finder. Client-side against a CORS-open source,
+ * bounded by a timeout and by the caller's own abort signal; any failure resolves to null (never
+ * throws), so this is safe to call from a component effect and safe to run offline — it just yields
+ * nothing.
  */
 export async function fetchAvailability(
   reload: { manufacturer: string; designation: string },
   signal?: AbortSignal,
 ): Promise<Availability | null> {
+  const ctrl = new AbortController();
+  const onAbort = () => ctrl.abort();
+  signal?.addEventListener("abort", onAbort);
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(checkStockUrl(reload), { signal });
+    const res = await fetch(checkStockUrl(reload), { signal: ctrl.signal });
     if (!res.ok) return null;
     return extractAvailability(await res.text());
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", onAbort);
   }
 }
