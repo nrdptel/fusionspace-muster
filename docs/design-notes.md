@@ -374,9 +374,11 @@ the reusable `npm run reconcile` tool — and now guarded on both the source mir
 (`lib/validate.ts`); the URL/sharing contract, the
 resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
-page in light and dark; the head/PWA markup is at sibling parity. Three substantial user-facing moves have
+page in light and dark; the head/PWA markup is at sibling parity. Several substantial user-facing moves have
 since come off this note by deliberate scope decision — **print** (paper parts sheet), **live
-availability** from the Motor Finder, and **reload physical dimensions** (all below). The availability
+availability** from the Motor Finder, **reload physical dimensions**, and **per-part source links** in
+the shopping list (delivering the "each part links to its source" promise the UI had only half-kept —
+all below). The availability
 badge now covers **case pages** too: once the Motor Finder published a **bulk `availability.json`**,
 Muster switched from parsing each motor's ~110 KB page to one shared ~28 KB feed fetch, which retired
 both the per-view cost and the single-reload scoping. Remaining known candidates are externally blocked
@@ -466,6 +468,28 @@ the field the UI leans on.
 sizing) stays deferred: unlike the reload figures, ThrustCurve doesn't carry them, so they'd be new
 hand-sourced data per case — the genuine scope call that drifts toward a spec sheet. Revisit only if
 that data can be sourced to the every-node bar the rest of the hardware graph holds.
+
+### Every part cites its source, in the UI (not just the repo)
+
+Muster's whole claim is that it's sourced — every hardware node carries a `sources` list, and the
+build fails on a source-less part. But that provenance was only *half* surfaced: crossloads showed
+their sources, and the home page promised "each part links to its source," yet the **shopping list
+dropped them on the floor**. The resolver had been carrying `sources` on every `ShoppingItem` (the
+case, each closure, the seal disc, the adapter, and the reload's ThrustCurve page) all along — the UI
+just never rendered them. For a safety-framed shopping aid, that's the gap most worth closing: a flyer
+should be able to click straight from "buy this closure" to the manufacturer/vendor page it's asserted
+from, and check it, without taking Muster's word for it.
+
+So each reusable part and the reload now show a small **"Source: host"** line — the same provenance
+line the crossload cautions already used, now extracted into one shared `SourceLinks` component
+(`components/SourceLinks.tsx`) that both the shopping list (interactive and the deep-link reload page)
+and the two crossload panels render, so provenance looks and reads identically everywhere. The host
+label comes from a pure, tested `sourceHost()` (`lib/links.ts`) that degrades to the raw string rather
+than throwing on a malformed URL, and a catalog-wide test asserts every reload's source resolves to a
+non-empty label. It's **print-safe** — provenance belongs on the paper parts sheet you take to the
+bench — and an e2e test asserts a reusable part surfaces a real external source link. The copy-list
+text is deliberately left terse (no URLs) — the on-screen and printed list carry the links; the
+pasteable order stays clean.
 
 ### The kit planner (companion tool)
 

@@ -1,6 +1,30 @@
 import { describe, it, expect } from "vitest";
-import { checkStockUrl, MOTOR_FINDER_URL } from "./links";
+import { checkStockUrl, MOTOR_FINDER_URL, sourceHost } from "./links";
 import { allReloads } from "./graph";
+
+describe("sourceHost", () => {
+  it("strips the scheme, a leading www., and any path to a bare host label", () => {
+    expect(sourceHost("https://www.aerotech-rocketry.com/products/hardware")).toBe("aerotech-rocketry.com");
+    expect(sourceHost("https://www.thrustcurve.org/motors/AeroTech/I161W/")).toBe("thrustcurve.org");
+  });
+
+  it("keeps a meaningful subdomain that isn't www", () => {
+    expect(sourceHost("https://pro38.com/products/")).toBe("pro38.com");
+    expect(sourceHost("https://shop.aerotech-rocketry.com/x")).toBe("shop.aerotech-rocketry.com");
+  });
+
+  it("falls back to the raw string rather than throwing on a non-URL", () => {
+    // A malformed source in the data must never crash a render — the label degrades, nothing more.
+    expect(sourceHost("not a url")).toBe("not a url");
+  });
+
+  it("gives every hardware source in the catalog a non-empty label", () => {
+    // Guards the whole graph: every sourced node renders a usable provenance link, catalog-wide.
+    for (const r of allReloads()) {
+      expect(sourceHost(r.tcUrl).length, `${r.designation} tcUrl host`).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe("checkStockUrl", () => {
   it("deep-links an AeroTech reload with a lowercased manufacturer slug", () => {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CrossloadCaseFit } from "@/lib/resolve";
 import { NOTE_CERT } from "@/lib/data/crossload";
 import { SYSTEM_LABEL } from "@/lib/graph";
+import SourceLinks from "./SourceLinks";
 
 /** The cross-brand crossload panel for a reload: the foreign-brand case(s) it can fly in by the
  *  manufacturers' published 75/98 mm crossloads. Amber, a caution — never a resolved fit —
@@ -38,17 +39,7 @@ export default function CrossloadCases({ fits }: { fits: CrossloadCaseFit[] }) {
         ))}
       </ul>
 
-      <p className="mt-3 text-xs opacity-80">
-        Source:{" "}
-        {sources.map((s, i) => (
-          <span key={s}>
-            {i > 0 ? ", " : ""}
-            <a href={s} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-100">
-              {new URL(s).hostname.replace(/^www\./, "")}
-            </a>
-          </span>
-        ))}
-      </p>
+      <SourceLinks sources={sources} className="mt-3 text-xs opacity-80" />
     </section>
   );
 }

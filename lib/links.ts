@@ -28,6 +28,17 @@ export function checkStockUrl(reload: { manufacturer: string; designation: strin
   return `${MOTOR_FINDER_URL}/motor/${slug}/${encodeURIComponent(reload.designation)}`;
 }
 
+/** The bare hostname of a source URL, for a compact provenance label — "www.aerotech-rocketry.com"
+ *  → "aerotech-rocketry.com". Falls back to the raw string if it isn't a parseable URL, so a
+ *  malformed source in the data can never throw during render. */
+export function sourceHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 // Data sources — credited in the footer and the methodology.
 export const THRUSTCURVE_URL = "https://www.thrustcurve.org";
 export const AEROTECH_URL = "https://www.aerotech-rocketry.com";
