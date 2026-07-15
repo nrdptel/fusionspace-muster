@@ -142,3 +142,61 @@ describe("reloads mirror — physical dimensions (optional, from ThrustCurve)", 
     expect(withLength / RELOADS.length).toBeGreaterThan(0.9);
   });
 });
+
+describe("reloads mirror — derivable safety invariants", () => {
+  // Facts about a reload that are DERIVABLE from its other fields, so a mismatch is a
+  // mis-keyed refresh, not a judgement call. These are the cheap, high-signal guards: they'd
+  // catch a fat-fingered manual refresh that put a reload on the wrong system, at the wrong
+  // diameter, or with contradictory deployment flags — the classes of error that can steer a
+  // flyer to the wrong hardware — even before the merged-graph contract (lib/validate.ts) runs.
+
+  const SYSTEM_OF: Record<Reload["manufacturer"], Reload["system"]> = {
+    AeroTech: "RMS",
+    Cesaroni: "Pro",
+    Loki: "Loki",
+  };
+
+  it("tags each reload with the system its manufacturer implies", () => {
+    // The shopping list keys its wording off `system`; a wrong tag would mis-describe the buy.
+    for (const r of RELOADS) {
+      expect(r.system, `${r.designation} system for ${r.manufacturer}`).toBe(SYSTEM_OF[r.manufacturer]);
+    }
+  });
+
+  it("carries a case for every reload — the graph's membership rule", () => {
+    // A reload with no case can't be placed in the compatibility graph, so it isn't mirrored.
+    for (const r of RELOADS) {
+      expect(r.caseInfo.length, `${r.designation} empty caseInfo`).toBeGreaterThan(0);
+    }
+  });
+
+  it("states a diameter that matches the one embedded in its caseInfo", () => {
+    // Every caseInfo names its bore — "RMS-38/360", "Pro38-3G", Loki "38/120". If the diameter
+    // field disagrees with that number, the reload is mis-sized, and every fit computed from it
+    // would be wrong. The first number in caseInfo that is itself a known diameter is the bore.
+    for (const r of RELOADS) {
+      const bore = (r.caseInfo.match(/\d+/g) ?? []).map(Number).find((n) => DIAMETERS.has(n));
+      expect(bore, `${r.designation} caseInfo ${r.caseInfo} has no bore`).toBeDefined();
+      expect(bore, `${r.designation} diameter ${r.diameter} vs caseInfo ${r.caseInfo}`).toBe(r.diameter);
+    }
+  });
+
+  it("keeps the plugged / ejection-charge flags consistent with the delays", () => {
+    // "P" delays means plugged means no ejection charge — electronic deployment only. A reload
+    // that claimed an ejection charge it doesn't have would be a deployment-safety error.
+    for (const r of RELOADS) {
+      const isPlugged = r.delays.trim().toUpperCase() === "P";
+      expect(r.plugged, `${r.designation} plugged vs delays "${r.delays}"`).toBe(isPlugged);
+      expect(r.ejectionCharge, `${r.designation} ejectionCharge vs plugged`).toBe(!r.plugged);
+    }
+  });
+
+  it("stores average thrust as a whole newton, the label convention", () => {
+    // avgThrustN is the number in the designation ("I161"); it's stored rounded and displayed
+    // rounded. Uniformly integer keeps a stray fractional value (one system was mirrored at raw
+    // precision) from ever reading back as "I234.62".
+    for (const r of RELOADS) {
+      expect(Number.isInteger(r.avgThrustN), `${r.designation} avgThrustN ${r.avgThrustN} not whole`).toBe(true);
+    }
+  });
+});
