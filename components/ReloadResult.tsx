@@ -2,7 +2,7 @@
 
 import type { Reload } from "@/lib/data/types";
 import { resolveReload, type CaseFit } from "@/lib/resolve";
-import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
+import { formatImpulse, formatThrust, formatDelays, propLabel, dimensionsLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { AvailabilityBadge, CertBadge, FitBadge, PluggedBadge, SparkyBadge } from "./badges";
 import AvailabilitySignal from "./Availability";
@@ -68,6 +68,9 @@ export default function ReloadResult({
           Class {reload.impulseClass} · {propLabel(reload)} · delay {formatDelays(reload)} · built
           for the <span className="font-mono text-zinc-700 dark:text-zinc-300">{reload.caseInfo}</span> case
         </p>
+        {dimensionsLabel(reload) && (
+          <p className="mt-1 text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{dimensionsLabel(reload)}</p>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <CertBadge reload={reload} />
           <PluggedBadge reload={reload} />

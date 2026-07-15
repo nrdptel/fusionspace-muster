@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { allReloads, reloadById, SYSTEM_LABEL } from "@/lib/graph";
 import { resolveReload, shoppingList, certLabel, type CaseFit } from "@/lib/resolve";
-import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
+import { formatImpulse, formatThrust, formatDelays, propLabel, dimensionsLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadCases from "@/components/CrossloadCases";
@@ -110,6 +110,9 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
         )}{" "}
         case
       </p>
+      {dimensionsLabel(r) && (
+        <p className="mt-1.5 text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{dimensionsLabel(r)}</p>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
         <CertBadge reload={r} />

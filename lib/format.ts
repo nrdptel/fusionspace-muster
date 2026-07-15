@@ -32,3 +32,28 @@ export function motorLabel(reload: Reload): string {
 export function propLabel(reload: Reload): string {
   return reload.propName ?? "—";
 }
+
+/** Assembled motor length, e.g. 191 → "191 mm". */
+export function formatLength(mm: number): string {
+  return `${Math.round(mm)} mm`;
+}
+
+/** A motor weight: grams up to a kilo, then kg with trailing zeros trimmed. 366 → "366 g",
+ *  1200 → "1.2 kg", 32672 → "32.7 kg". */
+export function formatWeight(g: number): string {
+  if (g < 1000) return `${Math.round(g)} g`;
+  const kg = g / 1000;
+  const s = (kg < 10 ? kg.toFixed(2) : kg.toFixed(1)).replace(/\.?0+$/, "");
+  return `${s} kg`;
+}
+
+/** The physical "does it fit / how heavy" line for a reload, built only from the fields ThrustCurve
+ *  actually carries — e.g. "191 mm long · 366 g loaded · 193 g propellant". Null when none are known,
+ *  so the UI can omit the row entirely rather than show a blank. */
+export function dimensionsLabel(reload: Reload): string | null {
+  const parts: string[] = [];
+  if (reload.lengthMm != null) parts.push(`${formatLength(reload.lengthMm)} long`);
+  if (reload.totalWeightG != null) parts.push(`${formatWeight(reload.totalWeightG)} loaded`);
+  if (reload.propWeightG != null) parts.push(`${formatWeight(reload.propWeightG)} propellant`);
+  return parts.length > 0 ? parts.join(" · ") : null;
+}

@@ -55,6 +55,14 @@ export interface Reload {
   avgThrustN: number;
   /** Total impulse in newton-seconds. */
   totImpulseNs: number;
+  /** Physical size of the assembled motor, from ThrustCurve — a fit-and-fly aid (does it fit the
+   *  mount? how heavy for CG?), not a spec sheet. Each is optional: shown only when ThrustCurve
+   *  carries it, never inferred. Assembled length in mm. */
+  lengthMm?: number;
+  /** Loaded (flight) weight of the assembled motor, in grams. */
+  totalWeightG?: number;
+  /** Propellant weight, in grams (a subset of the loaded weight). */
+  propWeightG?: number;
   /** Propellant formulation name, e.g. "White Lightning", or null. */
   propName: string | null;
   /** A "sparky" (metal-loaded) propellant — many fields restrict these. */
