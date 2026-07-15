@@ -1,93 +1,73 @@
 import { describe, it, expect } from "vitest";
-import { extractAvailability } from "./availability";
+import { parseFeed, availabilityOf, feedKey } from "./availability";
 
-// The parser reads the Motor Finder's per-motor schema.org JSON-LD. It must be exact on well-formed
-// data and safe (null, never a throw or a wrong signal) on anything unexpected, because a wrong
-// "in stock" would mislead and a throw would break the effect calling it.
+// The availability feed is the Motor Finder's bulk JSON. The parser must be exact on well-formed data
+// and safe (skip, never throw or invent a signal) on anything unexpected, and the lookup must key a
+// reload the same way the Motor Finder keys its motor URLs.
 
-const page = (jsonLd: string) =>
-  `<!doctype html><html><head><script type="application/ld+json">${jsonLd}</script></head><body></body></html>`;
-
-const offer = (avail: string) => `{"@type":"Offer","availability":"https://schema.org/${avail}"}`;
-
-describe("extractAvailability — per-vendor offers", () => {
-  it("counts in-stock vendors from the individual offers", () => {
-    const html = page(
-      `{"@type":"Product","offers":{"@type":"AggregateOffer","offerCount":4,"availability":"https://schema.org/InStock",` +
-        `"offers":[${offer("InStock")},${offer("OutOfStock")},${offer("InStock")},${offer("OutOfStock")}]}}`,
-    );
-    expect(extractAvailability(html)).toEqual({ anyInStock: true, inStock: 2, vendors: 4 });
-  });
-
-  it("reports out-of-stock-everywhere when no vendor has it", () => {
-    const html = page(
-      `{"@type":"AggregateOffer","offerCount":2,"availability":"https://schema.org/OutOfStock",` +
-        `"offers":[${offer("OutOfStock")},${offer("OutOfStock")}]}`,
-    );
-    expect(extractAvailability(html)).toEqual({ anyInStock: false, inStock: 0, vendors: 2 });
+describe("feedKey", () => {
+  it("keys as <lowercase-manufacturer>/<designation>, matching the Motor Finder URLs", () => {
+    expect(feedKey({ manufacturer: "AeroTech", designation: "I161W" })).toBe("aerotech/I161W");
+    expect(feedKey({ manufacturer: "Cesaroni", designation: "123J456-15A" })).toBe("cesaroni/123J456-15A");
+    expect(feedKey({ manufacturer: "Loki", designation: "H144-LW" })).toBe("loki/H144-LW");
   });
 });
 
-describe("extractAvailability — aggregate-only fallback", () => {
-  it("uses the AggregateOffer summary when there is no per-vendor breakdown", () => {
-    const html = page(`{"@type":"AggregateOffer","offerCount":7,"availability":"https://schema.org/InStock"}`);
-    expect(extractAvailability(html)).toEqual({ anyInStock: true, inStock: null, vendors: 7 });
+describe("parseFeed", () => {
+  const feed = parseFeed({
+    _generated: "2026-07-15T11:07:32Z",
+    motors: {
+      "aerotech/I161W": { vendors: 9, inStock: 4 },
+      "cesaroni/123J456-15A": { vendors: 3, inStock: 0 },
+      "loki/H144-LW": { vendors: 2, inStock: 2 },
+      "aerotech/BAD": { vendors: "x", inStock: 1 }, // wrong type — skipped
+      "aerotech/NEG": { vendors: -1, inStock: 0 }, // negative — skipped
+      "aerotech/EMPTY": null, // not an object — skipped
+    },
   });
 
-  it("treats a zero/empty aggregate as no data", () => {
-    expect(extractAvailability(page(`{"@type":"AggregateOffer","offerCount":0}`))).toBeNull();
+  it("keeps every well-formed entry and skips malformed ones", () => {
+    expect(feed.size).toBe(3);
+    expect(feed.get("aerotech/I161W")).toEqual({ vendors: 9, inStock: 4 });
+    expect(feed.has("aerotech/BAD")).toBe(false);
+    expect(feed.has("aerotech/NEG")).toBe(false);
+    expect(feed.has("aerotech/EMPTY")).toBe(false);
+  });
+
+  it("returns an empty map for anything that isn't a feed", () => {
+    expect(parseFeed(null).size).toBe(0);
+    expect(parseFeed("nope").size).toBe(0);
+    expect(parseFeed({}).size).toBe(0);
+    expect(parseFeed({ motors: "nope" }).size).toBe(0);
   });
 });
 
-describe("extractAvailability — tolerant of anything unexpected", () => {
-  it("returns null with no JSON-LD block", () => {
-    expect(extractAvailability("<html><body>no data</body></html>")).toBeNull();
+describe("availabilityOf", () => {
+  const feed = parseFeed({
+    motors: {
+      "aerotech/I161W": { vendors: 9, inStock: 4 },
+      "cesaroni/123J456-15A": { vendors: 3, inStock: 0 },
+      "loki/H144-LW": { vendors: 1, inStock: 1 },
+    },
   });
 
-  it("returns null on invalid JSON", () => {
-    expect(extractAvailability(page("{ not json"))).toBeNull();
+  it("reports in-stock with the vendor count when a vendor has it", () => {
+    expect(availabilityOf(feed, { manufacturer: "AeroTech", designation: "I161W" })).toEqual({
+      anyInStock: true,
+      inStock: 4,
+      vendors: 9,
+    });
   });
 
-  it("returns null when there are no offers at all", () => {
-    expect(extractAvailability(page(`{"@type":"Product","name":"I161W"}`))).toBeNull();
+  it("reports out-of-stock when no vendor has it", () => {
+    expect(availabilityOf(feed, { manufacturer: "Cesaroni", designation: "123J456-15A" })).toEqual({
+      anyInStock: false,
+      inStock: 0,
+      vendors: 3,
+    });
   });
 
-  it("does not mistake OutOfStock for in stock", () => {
-    const html = page(`{"@type":"Product","offers":[${offer("OutOfStock")}]}`);
-    expect(extractAvailability(html)).toEqual({ anyInStock: false, inStock: 0, vendors: 1 });
-  });
-});
-
-describe("extractAvailability — the real Motor Finder page shape", () => {
-  // A faithful reproduction of a live per-motor page's JSON-LD: a Product with a Brand, an
-  // AggregateOffer carrying prices, and per-vendor Offers each with a price and an Organization
-  // seller. The recursive walk must find the offers through that nesting and among the other node
-  // types, and ignore the price fields — this guards it against the actual structure, not just the
-  // stripped-down fixtures above. Mirrors the AeroTech I161W page (9 vendors, 4 in stock) verified live.
-  const sellerOffer = (price: string, avail: string, seller: string) =>
-    `{"@type":"Offer","price":"${price}","priceCurrency":"USD",` +
-    `"availability":"https://schema.org/${avail}","seller":{"@type":"Organization","name":"${seller}"}}`;
-
-  const realShape = page(
-    `{"@context":"https://schema.org","@type":"Product","name":"AeroTech I161W","sku":"I161W",` +
-      `"brand":{"@type":"Brand","name":"AeroTech"},` +
-      `"offers":{"@type":"AggregateOffer","lowPrice":"45.00","highPrice":"69.49","offerCount":9,` +
-      `"priceCurrency":"USD","availability":"https://schema.org/InStock","offers":[` +
-      [
-        sellerOffer("55.79", "InStock", "Balsa Machining Service"),
-        sellerOffer("58.89", "InStock", "BuyRocketMotors.com"),
-        sellerOffer("69.49", "OutOfStock", "AeroTech (direct)"),
-        sellerOffer("69.49", "InStock", "Wildman Rocketry"),
-        sellerOffer("61.99", "OutOfStock", "Performance Hobbies"),
-        sellerOffer("61.99", "OutOfStock", "Animal Motor Works"),
-        sellerOffer("61.99", "InStock", "Chris' Rocket Supplies"),
-        sellerOffer("45.00", "OutOfStock", "Moto-Joe Rocketry"),
-        sellerOffer("60.46", "OutOfStock", "Sirius Rocketry"),
-      ].join(",") +
-      `]}}`,
-  );
-
-  it("counts vendors and in-stock through the full nesting, ignoring prices and other node types", () => {
-    expect(extractAvailability(realShape)).toEqual({ anyInStock: true, inStock: 4, vendors: 9 });
+  it("returns null for a reload the Motor Finder doesn't track", () => {
+    expect(availabilityOf(feed, { manufacturer: "AeroTech", designation: "NOT-TRACKED" })).toBeNull();
   });
 });

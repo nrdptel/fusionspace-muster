@@ -1,103 +1,85 @@
-// Best-effort live availability for a reload, read from the HPR Motor Finder — the sibling tool
-// that owns cross-vendor stock and pricing. Muster stays what it is (the compatibility graph, a
-// static offline shopping aid); this is a thin, optional signal layered on top: is the reload
-// actually buyable right now?
+// Live availability from the Motor Finder — the sibling tool that owns cross-vendor stock. Muster
+// stays what it is (a static, offline compatibility graph); this is a thin, optional signal on top:
+// is a reload buyable right now, and at how many vendors?
 //
-// It reads the Motor Finder's per-motor page, whose schema.org `AggregateOffer`/`Offer` JSON-LD is
-// rebuilt hourly and served with `Access-Control-Allow-Origin: *`, so Muster can fetch it directly
-// from the browser — no server proxy (which the static/free-tier rules forbid), no new data mirror.
-// AVAILABILITY ONLY, never price: pricing stays the Motor Finder's job, and a safety-framed shopping
-// aid shouldn't grow a price tag. Every failure path — offline, blocked, or a changed page shape —
-// resolves to `null`, so the caller renders nothing and Muster's own answer is never blocked.
-
-import { checkStockUrl } from "./links";
+// It reads ONE small static file — the Motor Finder's `availability.json`, rebuilt hourly and served
+// with `Access-Control-Allow-Origin: *` — so Muster fetches it client-side (no server proxy, which the
+// static/free-tier rules forbid) once per page and reuses it for every reload on the page, including a
+// whole case's list. AVAILABILITY ONLY, never price: pricing stays the Motor Finder's job. Every
+// failure path — offline, blocked, a motor the Motor Finder doesn't track, a changed feed shape —
+// yields no badge, so Muster's own (bundled, offline) answer is never blocked.
 
 export interface Availability {
   /** At least one vendor has the reload in stock. */
   anyInStock: boolean;
-  /** How many vendors have it in stock, when the per-vendor breakdown is present (else null). */
-  inStock: number | null;
+  /** How many vendors have it in stock. */
+  inStock: number;
   /** Total vendors listing it. */
   vendors: number;
 }
 
-// schema.org availability values are URLs like "https://schema.org/InStock". "OutOfStock" does not
-// contain "instock", so this cleanly matches in-stock only; anything else (limited, preorder,
-// discontinued) counts as not-in-stock, which is the conservative read.
-const IN_STOCK = /instock/i;
-
-/**
- * Pull availability out of a Motor Finder per-motor page's schema.org JSON-LD. Pure and deliberately
- * tolerant: no block, invalid JSON, or no offers all return null so the UI shows nothing rather than
- * guessing. Prefers the per-vendor `Offer` breakdown (exact in-stock count); falls back to the
- * `AggregateOffer` summary when only that is present.
- */
-export function extractAvailability(html: string): Availability | null {
-  const block = html.match(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/i);
-  if (!block) return null;
-  let data: unknown;
-  try {
-    data = JSON.parse(block[1].replace(/\\u003c/gi, "<"));
-  } catch {
-    return null;
-  }
-
-  const offers: Array<{ availability?: unknown }> = [];
-  let aggregate: { offerCount?: unknown; availability?: unknown } | undefined;
-  const walk = (node: unknown): void => {
-    if (Array.isArray(node)) {
-      node.forEach(walk);
-      return;
-    }
-    if (!node || typeof node !== "object") return;
-    const o = node as Record<string, unknown>;
-    if (o["@type"] === "Offer") offers.push(o);
-    if (o["@type"] === "AggregateOffer") aggregate = o;
-    for (const v of Object.values(o)) walk(v);
-  };
-  walk(data);
-
-  const inStockOf = (a: unknown) => typeof a === "string" && IN_STOCK.test(a);
-
-  if (offers.length > 0) {
-    const inStock = offers.filter((o) => inStockOf(o.availability)).length;
-    return { anyInStock: inStock > 0, inStock, vendors: offers.length };
-  }
-  if (aggregate) {
-    const vendors = typeof aggregate.offerCount === "number" ? aggregate.offerCount : 0;
-    if (vendors <= 0) return null;
-    return { anyInStock: inStockOf(aggregate.availability), inStock: null, vendors };
-  }
-  return null;
-}
-
-// A hung Motor Finder response shouldn't leave the app's one network request pending indefinitely.
-// It's a best-effort supplementary signal, so bound the wait — a badge that would arrive many
-// seconds late is no use, and the fail-silent path turns a timeout into "no badge" like any error.
+/** The Motor Finder's bulk availability feed: one JSON, keyed like its motor URLs. */
+const FEED_URL = "https://motor.fusionspace.co/availability.json";
 const TIMEOUT_MS = 6000;
 
-/**
- * Fetch live availability for a reload from the Motor Finder. Client-side against a CORS-open source,
- * bounded by a timeout and by the caller's own abort signal; any failure resolves to null (never
- * throws), so this is safe to call from a component effect and safe to run offline — it just yields
- * nothing.
- */
-export async function fetchAvailability(
+interface Entry {
+  vendors: number;
+  inStock: number;
+}
+
+/** The feed's key for a reload: "<lowercase-manufacturer>/<designation>", matching the Motor Finder's
+ *  own `/motor/<mfr>/<designation>` URLs (both keyed off the shared ThrustCurve identity). */
+export function feedKey(reload: { manufacturer: string; designation: string }): string {
+  return `${reload.manufacturer.toLowerCase()}/${reload.designation}`;
+}
+
+/** Look a reload up in a parsed feed. Returns null when the Motor Finder doesn't track it. */
+export function availabilityOf(
+  feed: Map<string, Entry>,
   reload: { manufacturer: string; designation: string },
-  signal?: AbortSignal,
-): Promise<Availability | null> {
-  const ctrl = new AbortController();
-  const onAbort = () => ctrl.abort();
-  signal?.addEventListener("abort", onAbort);
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-  try {
-    const res = await fetch(checkStockUrl(reload), { signal: ctrl.signal });
-    if (!res.ok) return null;
-    return extractAvailability(await res.text());
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener("abort", onAbort);
+): Availability | null {
+  const entry = feed.get(feedKey(reload));
+  if (!entry) return null;
+  return { anyInStock: entry.inStock > 0, inStock: entry.inStock, vendors: entry.vendors };
+}
+
+/** Parse the feed JSON into a lookup map. Pure and tolerant: any unexpected shape (or a bad entry)
+ *  is skipped, so a malformed feed degrades to "no badges" rather than a wrong or thrown result. */
+export function parseFeed(json: unknown): Map<string, Entry> {
+  const map = new Map<string, Entry>();
+  if (!json || typeof json !== "object") return map;
+  const motors = (json as { motors?: unknown }).motors;
+  if (!motors || typeof motors !== "object") return map;
+  for (const [key, value] of Object.entries(motors as Record<string, unknown>)) {
+    if (!value || typeof value !== "object") continue;
+    const { vendors, inStock } = value as { vendors?: unknown; inStock?: unknown };
+    if (typeof vendors === "number" && typeof inStock === "number" && vendors >= 0 && inStock >= 0) {
+      map.set(key, { vendors, inStock });
+    }
   }
+  return map;
+}
+
+// One fetch per page, shared by every badge on it (a case page renders ~30). Memoized as a promise so
+// concurrent callers share the in-flight request; any failure resolves to an empty map.
+let feed: Promise<Map<string, Entry>> | null = null;
+
+export function getAvailabilityFeed(): Promise<Map<string, Entry>> {
+  if (!feed) feed = loadFeed();
+  return feed;
+}
+
+async function loadFeed(): Promise<Map<string, Entry>> {
+  try {
+    const res = await fetch(FEED_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!res.ok) return new Map();
+    return parseFeed(await res.json());
+  } catch {
+    return new Map();
+  }
+}
+
+/** Reset the memoized feed — for tests only. */
+export function __resetAvailabilityFeed(): void {
+  feed = null;
 }

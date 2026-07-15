@@ -7,6 +7,7 @@ import { formatImpulse, formatThrust, propLabel } from "@/lib/format";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadReloads from "@/components/CrossloadReloads";
 import EntityFrame from "@/components/EntityFrame";
+import AvailabilitySignal from "@/components/Availability";
 import { caseJsonLd } from "@/lib/jsonld";
 
 // Every case id is known at build time; anything else 404s (no on-demand rendering on a
@@ -82,6 +83,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           <PluggedBadge reload={f.reload} />
           <SparkyBadge reload={f.reload} />
           <AvailabilityBadge reload={f.reload} />
+          <AvailabilitySignal manufacturer={f.reload.manufacturer} designation={f.reload.designation} />
         </div>
       </Link>
     </li>

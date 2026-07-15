@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchAvailability, type Availability } from "@/lib/availability";
+import { getAvailabilityFeed, availabilityOf, type Availability } from "@/lib/availability";
 
-/** A best-effort "is it buyable right now?" signal for a reload, read live from the HPR Motor Finder
- *  (the sibling that owns cross-vendor stock). Availability only — no prices; the "where to buy" link
- *  beside it hands pricing off. It renders NOTHING until a fetch succeeds, and nothing at all offline
- *  or on any error, so it never blocks or delays Muster's own (offline, bundled) answer. Hidden in
- *  print — a paper sheet can't carry a live stock state without going stale the moment it's printed. */
+/** A best-effort "is it buyable right now?" signal for a reload, read from the Motor Finder's bulk
+ *  availability feed (the sibling that owns cross-vendor stock). Availability only — no prices; the
+ *  "Find it in stock" link beside it hands pricing off. It renders NOTHING until the feed resolves,
+ *  and nothing at all offline, on any error, or for a reload the Motor Finder doesn't track — so it
+ *  never blocks Muster's own (offline, bundled) answer. The whole page shares one feed fetch, so
+ *  badging a case's ~30 reloads costs a single request. Hidden in print — a live stock state can't go
+ *  onto paper without going stale the moment it prints. */
 export default function AvailabilitySignal({
   manufacturer,
   designation,
@@ -18,22 +20,20 @@ export default function AvailabilitySignal({
   const [data, setData] = useState<Availability | null>(null);
 
   useEffect(() => {
-    const ctrl = new AbortController();
     let live = true;
-    fetchAvailability({ manufacturer, designation }, ctrl.signal).then((a) => {
-      if (live) setData(a);
+    getAvailabilityFeed().then((f) => {
+      if (live) setData(availabilityOf(f, { manufacturer, designation }));
     });
     return () => {
       live = false;
-      ctrl.abort();
     };
   }, [manufacturer, designation]);
 
   if (!data) return null;
 
   const label = data.anyInStock
-    ? `In stock now${data.inStock != null ? ` · ${data.inStock} vendor${data.inStock === 1 ? "" : "s"}` : ""}`
-    : "Out of stock everywhere right now";
+    ? `In stock · ${data.inStock} vendor${data.inStock === 1 ? "" : "s"}`
+    : "Out of stock everywhere";
 
   return (
     <span
