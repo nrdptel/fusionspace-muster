@@ -106,3 +106,39 @@ describe("reloads mirror — field domains (the JSON is cast, not type-checked)"
     }
   });
 });
+
+describe("reloads mirror — physical dimensions (optional, from ThrustCurve)", () => {
+  // length / loaded weight / propellant weight are the fit-and-fly aid: each is optional, mirrored
+  // only when ThrustCurve carries it, and never inferred. These guard that a refresh can't ship a
+  // garbage figure (a negative length, a propellant heavier than the loaded motor it sits inside)
+  // or silently drop the coverage the UI leans on.
+  it("keeps every present physical field a positive number", () => {
+    for (const r of RELOADS) {
+      for (const field of ["lengthMm", "totalWeightG", "propWeightG"] as const) {
+        const v = r[field];
+        if (v != null) {
+          expect(typeof v, `${r.designation} ${field} type`).toBe("number");
+          expect(Number.isFinite(v), `${r.designation} ${field} finite`).toBe(true);
+          expect(v, `${r.designation} ${field}`).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it("never lists propellant heavier than the loaded motor it sits inside", () => {
+    // Propellant is a subset of the loaded weight; propWeightG > totalWeightG is physically
+    // impossible and signals a mis-joined row (the one such point, 25E75-17A, is dropped upstream).
+    for (const r of RELOADS) {
+      if (r.propWeightG != null && r.totalWeightG != null) {
+        expect(r.propWeightG, `${r.designation} propWeightG > totalWeightG`).toBeLessThanOrEqual(r.totalWeightG);
+      }
+    }
+  });
+
+  it("carries assembled length on the vast majority of the catalog", () => {
+    // ThrustCurve lists a length for essentially every motor; the UI's dimensions row leans on it.
+    // A refresh that silently dropped the field (a renamed key, a bad join) would crater this.
+    const withLength = RELOADS.filter((r) => r.lengthMm != null).length;
+    expect(withLength / RELOADS.length).toBeGreaterThan(0.9);
+  });
+});

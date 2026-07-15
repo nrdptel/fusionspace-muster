@@ -342,14 +342,15 @@ external change); the data is freshly audited and now guarded on both the source
 (`lib/data/reloads.test.ts`) and the merged graph (`lib/validate.ts`); the URL/sharing contract, the
 resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
-page in light and dark; the head/PWA markup is at sibling parity. Two substantial user-facing moves have
-since come off this note by deliberate scope decision — **print** (paper parts sheet) and **live
-availability** from the Motor Finder (below). The availability badge now covers **case pages** too: once
-the Motor Finder published a **bulk `availability.json`**, Muster switched from parsing each motor's
-~110 KB page to one shared ~28 KB feed fetch, which retired both the per-view cost and the single-reload
-scoping. Remaining known candidates are externally blocked or gated on a maintainer decision: a fourth
-motor system and the Loft footer link (both wait on an external change); and physical case/reload
-dimensions for airframe fit (a genuine scope call — new sourced data that drifts toward a spec sheet).
+page in light and dark; the head/PWA markup is at sibling parity. Three substantial user-facing moves have
+since come off this note by deliberate scope decision — **print** (paper parts sheet), **live
+availability** from the Motor Finder, and **reload physical dimensions** (all below). The availability
+badge now covers **case pages** too: once the Motor Finder published a **bulk `availability.json`**,
+Muster switched from parsing each motor's ~110 KB page to one shared ~28 KB feed fetch, which retired
+both the per-view cost and the single-reload scoping. Remaining known candidates are externally blocked
+or gated on a maintainer decision: a fourth motor system and the Loft footer link (both wait on an
+external change); and physical **case-hardware** dimensions (Tier 2 below — the part that would drift
+toward a spec sheet and can't yet be cleanly sourced).
 (`lib/og-mark.ts`, once listed here, is a generated base64 data-URI constant, not logic — nothing to
 test.) Absent one of those unblocks, further work here is polish, not a needle-mover.
 
@@ -404,6 +405,35 @@ The copy around the hand-off is sharpened so the "what vs where" split reads cle
 to buy; the Motor Finder shows where it's in stock and for how much." An e2e test drives the mocked feed
 and asserts the in-stock badge on a reload page, the fail-silent path, and — the bulk feed's payoff — that
 a **case page badges its whole reload list from a single feed request**.
+
+### Reload physical dimensions — the fit-and-fly aid (Tier 1)
+
+"Does this motor fit my mount, and how heavy is it for my CG?" is the one question about a reload the
+tool couldn't answer, and the answer was already sitting in the source: ThrustCurve carries an
+**assembled length, loaded weight, and propellant weight** on nearly every motor. So this is a data
+augmentation, not new sourcing — the same mirror, three more fields per row, pulled from the same
+ThrustCurve records the catalog already comes from. `lengthMm`, `totalWeightG`, and `propWeightG` are
+**optional** on `Reload`, mirrored only where ThrustCurve carries the figure and **never inferred**;
+today length covers all 541 reloads, the two weights ~535/539. They surface as one quiet line —
+"191 mm long · 366 g loaded · 193 g propellant" — on the reload's spec card, its deep-link page, built
+by a pure, tested `dimensionsLabel()` that omits any missing field and returns null (so the row drops
+entirely) when none are known. `formatWeight` reads in grams up to a kilogram, then kg with trailing
+zeros trimmed.
+
+Two disciplines keep this from drifting into an unsourced spec sheet. First, the framing: the `Reload`
+type comment states outright it's *a fit-and-fly aid, not a spec sheet* — length and weight for mount
+fit and CG, nothing the printed instructions don't already state. Second, the mirror's integrity
+contract (`lib/data/reloads.test.ts`) grew a guard for exactly the ways a future refresh could corrupt
+these: every present physical field must be a positive finite number, **propellant weight can never
+exceed the loaded weight it sits inside** (physically impossible — the one such ThrustCurve point,
+25E75-17A with a propellant heavier than its whole motor, is dropped at augmentation rather than
+mirrored), and length coverage must stay above 90% so a renamed key or a bad join can't silently gut
+the field the UI leans on.
+
+**Tier 2 — case-hardware dimensions** (a case's own length, diameter, and weight, for airframe/mount
+sizing) stays deferred: unlike the reload figures, ThrustCurve doesn't carry them, so they'd be new
+hand-sourced data per case — the genuine scope call that drifts toward a spec sheet. Revisit only if
+that data can be sourced to the every-node bar the rest of the hardware graph holds.
 
 ### The kit planner (companion tool)
 
