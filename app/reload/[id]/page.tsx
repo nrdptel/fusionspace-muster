@@ -7,6 +7,7 @@ import { formatImpulse, formatThrust, formatDelays, propLabel, dimensionsLabel }
 import { checkStockUrl } from "@/lib/links";
 import { CertBadge, PluggedBadge, SparkyBadge, AvailabilityBadge, FitBadge } from "@/components/badges";
 import CrossloadCases from "@/components/CrossloadCases";
+import SourceLinks from "@/components/SourceLinks";
 import EntityFrame from "@/components/EntityFrame";
 import AvailabilitySignal from "@/components/Availability";
 import { reloadJsonLd } from "@/lib/jsonld";
@@ -181,6 +182,7 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
                       )}
                     </div>
                     {item.detail && <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</p>}
+                    <SourceLinks sources={item.sources} className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400" />
                   </li>
                 ))}
               </ul>
@@ -194,6 +196,7 @@ export default async function ReloadPage({ params }: { params: Promise<{ id: str
                 {nativeList.consumable.detail && (
                   <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{nativeList.consumable.detail}</p>
                 )}
+                <SourceLinks sources={nativeList.consumable.sources} className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400" />
                 <AvailabilitySignal manufacturer={r.manufacturer} designation={r.designation} />
               </div>
               {nativeList.notes.length > 0 && (

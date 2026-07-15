@@ -3,6 +3,7 @@ import type { CrossloadReloadFit } from "@/lib/resolve";
 import { NOTE_CERT } from "@/lib/data/crossload";
 import { formatImpulse, propLabel } from "@/lib/format";
 import { PluggedBadge, SparkyBadge } from "./badges";
+import SourceLinks from "./SourceLinks";
 
 /** The cross-brand crossload panel for a case: the foreign-brand reloads it can take by the
  *  manufacturers' published 75/98 mm crossloads. Deliberately amber and worded as a caution —
@@ -59,17 +60,7 @@ export default function CrossloadReloads({
         ))}
       </ul>
 
-      <p className="mt-3 text-xs opacity-80">
-        Source:{" "}
-        {sources.map((s, i) => (
-          <span key={s}>
-            {i > 0 ? ", " : ""}
-            <a href={s} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:opacity-100">
-              {new URL(s).hostname.replace(/^www\./, "")}
-            </a>
-          </span>
-        ))}
-      </p>
+      <SourceLinks sources={sources} className="mt-3 text-xs opacity-80" />
     </section>
   );
 }

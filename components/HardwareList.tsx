@@ -6,6 +6,7 @@ import { shoppingList, shoppingListText, type FitKind } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { checkStockUrl } from "@/lib/links";
 import AvailabilitySignal from "./Availability";
+import SourceLinks from "./SourceLinks";
 
 /** The complete "what to buy to fly this" panel for a chosen case + reload. Splits the
  *  one-time reusable hardware from the single-use reload, and carries the conservative
@@ -78,6 +79,7 @@ export default function HardwareList({
                 {item.detail && (
                   <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</p>
                 )}
+                <SourceLinks sources={item.sources} className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400" />
               </li>
             ))}
           </ul>
@@ -95,6 +97,7 @@ export default function HardwareList({
               {list.consumable.detail && (
                 <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{list.consumable.detail}</p>
               )}
+              <SourceLinks sources={list.consumable.sources} className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400" />
               <AvailabilitySignal manufacturer={reload.manufacturer} designation={reload.designation} />
               <div>
                 <a

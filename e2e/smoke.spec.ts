@@ -76,6 +76,12 @@ test("case → reloads → shopping list (the core loop)", async ({ page }) => {
     "https://motor.fusionspace.co/motor/aerotech/I161W",
   );
 
+  // Every reusable part cites where it comes from — the sourcing the tool's credibility rests on,
+  // and the "each part links to its source" promise made on the home page.
+  const caseItem = list.locator("li", { hasText: "RMS-38/360 case" });
+  await expect(caseItem.getByText(/^Sources?:/)).toBeVisible();
+  await expect(caseItem.getByRole("link").first()).toHaveAttribute("href", /^https?:\/\//);
+
   // The selection lives in the URL, so the view is shareable.
   await expect(page).toHaveURL(/have=case/);
   await expect(page).toHaveURL(/case=rms-38-360/);
