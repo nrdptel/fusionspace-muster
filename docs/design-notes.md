@@ -344,17 +344,14 @@ resolver invariants, and the always-rendered observance chrome (`lib/observances
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
 page in light and dark; the head/PWA markup is at sibling parity. Two substantial user-facing moves have
 since come off this note by deliberate scope decision — **print** (paper parts sheet) and **live
-availability** from the Motor Finder (both below). Remaining known candidates are externally blocked or
-gated on a maintainer decision: a fourth motor system and the Loft footer link (both wait on an external
-change); extending the availability badge to **case pages** and cutting its per-view cost, both of which
-want a **bulk availability endpoint** on the Motor Finder (today it reads a ~114 KB page per reload, so
-it's scoped to single-reload surfaces); and physical case/reload dimensions for airframe fit (a genuine
-scope call — new sourced data that drifts toward a spec sheet). (`lib/og-mark.ts`, once listed here, is a
-generated base64 data-URI constant, not logic — nothing to test.) The small hardening within reach has
-been done: the availability fetch is now **bounded by a timeout** and its parser is guarded against the
-**real Motor Finder page shape** (a committed full-nesting fixture in `lib/availability.test.ts`), and the
-shipped parser was re-verified against the live page — it reads the real AeroTech I161W page as 9 vendors,
-4 in stock. Absent one of those external unblocks, further work here is polish, not a needle-mover.
+availability** from the Motor Finder (below). The availability badge now covers **case pages** too: once
+the Motor Finder published a **bulk `availability.json`**, Muster switched from parsing each motor's
+~110 KB page to one shared ~28 KB feed fetch, which retired both the per-view cost and the single-reload
+scoping. Remaining known candidates are externally blocked or gated on a maintainer decision: a fourth
+motor system and the Loft footer link (both wait on an external change); and physical case/reload
+dimensions for airframe fit (a genuine scope call — new sourced data that drifts toward a spec sheet).
+(`lib/og-mark.ts`, once listed here, is a generated base64 data-URI constant, not logic — nothing to
+test.) Absent one of those unblocks, further work here is polish, not a needle-mover.
 
 ### Print — a paper parts sheet
 
@@ -377,30 +374,36 @@ The suite's division of labour: **Muster owns compatibility** (its bespoke, stat
 graph); the **Motor Finder owns availability** (live cross-vendor stock and pricing). They've always
 been stitched by a stable URL convention keyed on the shared ThrustCurve identity
 (`/motor/<manufacturer>/<designation>`, `lib/links.ts`). This adds a *thin* read across that seam: a
-best-effort **"in stock now · N vendors" / "out of stock everywhere"** signal on the reload's shopping
-list and its deep-link page.
+best-effort **"in stock · N vendors" / "out of stock everywhere"** signal wherever a reload appears — its
+shopping list, its deep-link page, and **every reload row on a case** (interactive and deep-link).
 
-It reads the Motor Finder's per-motor page, whose schema.org `AggregateOffer`/`Offer` JSON-LD is rebuilt
-hourly and — verified — served with `Access-Control-Allow-Origin: *`, so Muster fetches it **client-side,
-no server proxy** (which the static/free-tier rules forbid) and no new data mirror. The parser
-(`extractAvailability`, pure and unit-tested) counts in-stock vendors from the per-vendor offers, falling
-back to the aggregate summary. The design keeps Muster *Muster*, not a second storefront:
+It reads the Motor Finder's **bulk availability feed** (`motor.fusionspace.co/availability.json`) — one
+small JSON (~28 KB, ~600 motors), rebuilt hourly and served with `Access-Control-Allow-Origin: *`, so
+Muster fetches it **client-side, no server proxy** (which the static/free-tier rules forbid) and no new
+data mirror. It's keyed like the Motor Finder's motor URLs — `"<lowercase-manufacturer>/<designation>"`,
+off the shared ThrustCurve identity — and each entry is a tiny `{vendors, inStock}` summary. The parser
+and lookup (`parseFeed`, `availabilityOf`, pure and unit-tested; verified against the live feed) are
+tolerant: a bad entry is skipped, an untracked reload returns null. Crucially the whole page shares **one
+memoized fetch** (`getAvailabilityFeed`), so badging a case's ~30 reloads costs a single 28 KB request —
+which is what let the badge move from single-reload surfaces onto case lists. (This replaced an earlier
+approach that parsed each motor's ~110 KB page, one fetch per reload; the bulk feed the Motor Finder now
+publishes made per-view parsing obsolete.) The design keeps Muster *Muster*, not a second storefront:
 
 - **Availability only, never price.** Pricing stays the Motor Finder's authority; the "Find it in stock"
   link and a "Muster shows what to buy; the Motor Finder shows where and for how much" line hand it off.
   A safety-framed shopping aid shouldn't grow a price tag.
 - **Pure progressive enhancement.** The bundled compatibility answer renders instantly; the signal is a
-  best-effort effect that renders nothing until it resolves and **nothing at all on any failure** —
-  offline, blocked, or a changed page shape all resolve to `null`. The offline-at-the-field promise is
-  untouched (the service worker already passes cross-origin fetches straight through), and an e2e test
-  asserts the fail-silent path keeps the page fully usable.
+  best-effort effect that renders nothing until the feed resolves and **nothing at all on any failure** —
+  offline, blocked, an untracked reload, or a changed feed shape all resolve to an empty map / `null`. The
+  offline-at-the-field promise is untouched (the service worker already passes cross-origin fetches
+  straight through), and an e2e test asserts the fail-silent path keeps the page fully usable.
 - **Freshness-honest and print-safe.** A tooltip says "refreshed hourly," and the badge is `print:hidden`
   — a live stock state can't go onto paper without going stale the moment it prints.
 
-The copy around the hand-off was sharpened at the same time so the "what vs where" split reads clearly:
-"Muster shows what to buy; the Motor Finder shows where it's in stock and for how much." **Deliberately
-scoped to single-reload surfaces** (one fetch each); a case page lists ~30 reloads, so badging those waits
-on a bulk availability endpoint rather than fanning out ~30 page fetches.
+The copy around the hand-off is sharpened so the "what vs where" split reads clearly: "Muster shows what
+to buy; the Motor Finder shows where it's in stock and for how much." An e2e test drives the mocked feed
+and asserts the in-stock badge on a reload page, the fail-silent path, and — the bulk feed's payoff — that
+a **case page badges its whole reload list from a single feed request**.
 
 ### The kit planner (companion tool)
 

@@ -1,50 +1,50 @@
 import { test, expect } from "@playwright/test";
 
-// The live availability signal reads the Motor Finder cross-origin. These drive it with the network
-// mocked: it must show when the fetch succeeds, and — the load-bearing property — must silently show
-// NOTHING (and never block the page) when the fetch fails, so Muster's offline answer is untouched.
+// The availability signal reads the Motor Finder's bulk feed cross-origin. These drive it with the
+// network mocked: it shows when the feed resolves, shows NOTHING (and never blocks the page) when the
+// feed fails, and — the payoff of a bulk feed — badges a whole case's reload list from ONE request.
 
-const IN_STOCK_PAGE =
-  `<!doctype html><html><head><script type="application/ld+json">` +
-  JSON.stringify({
-    "@type": "Product",
-    name: "AeroTech I161W",
-    offers: {
-      "@type": "AggregateOffer",
-      offerCount: 3,
-      availability: "https://schema.org/InStock",
-      offers: [
-        { "@type": "Offer", availability: "https://schema.org/InStock" },
-        { "@type": "Offer", availability: "https://schema.org/OutOfStock" },
-        { "@type": "Offer", availability: "https://schema.org/InStock" },
-      ],
-    },
-  }) +
-  `</script></head><body></body></html>`;
+const FEED = {
+  _generated: "2026-07-15T00:00:00Z",
+  motors: { "aerotech/I161W": { vendors: 5, inStock: 3 } },
+};
 
-test.describe("live availability signal on the reload page", () => {
-  test("shows in-stock when the Motor Finder fetch succeeds", async ({ page }) => {
-    await page.route(/motor\.fusionspace\.co/, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "text/html",
-        headers: { "access-control-allow-origin": "*" },
-        body: IN_STOCK_PAGE,
-      }),
-    );
+function mockFeed(json: unknown) {
+  return (route: import("@playwright/test").Route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify(json),
+    });
+}
+
+test.describe("live availability signal", () => {
+  test("shows in-stock on the reload page when the feed resolves", async ({ page }) => {
+    await page.route(/availability\.json/, mockFeed(FEED));
     await page.goto("/reload/at-i161w", { waitUntil: "networkidle" });
-    // 2 of the 3 mocked vendors are in stock.
-    await expect(page.getByText("In stock now · 2 vendors")).toBeVisible();
+    await expect(page.getByText("In stock · 3 vendors")).toBeVisible();
     await expect(page.getByRole("link", { name: /Find it in stock/ })).toBeVisible();
   });
 
-  test("shows nothing and stays usable when the fetch fails (offline)", async ({ page }) => {
-    await page.route(/motor\.fusionspace\.co/, (route) => route.abort());
+  test("shows nothing and stays usable when the feed fails (offline)", async ({ page }) => {
+    await page.route(/availability\.json/, (route) => route.abort());
     await page.goto("/reload/at-i161w", { waitUntil: "networkidle" });
-    // The reference content is unaffected...
     await expect(page.getByRole("heading", { level: 1, name: "I161W" })).toBeVisible();
     await expect(page.getByText("Muster is a shopping aid, not an assembly guide.")).toBeVisible();
-    // ...and no availability signal is shown.
-    await expect(page.getByText(/In stock now|Out of stock everywhere/)).toHaveCount(0);
+    await expect(page.getByText(/In stock ·|Out of stock everywhere/)).toHaveCount(0);
+  });
+
+  test("badges a case's reload list from a single feed request", async ({ page }) => {
+    const feedRequests: string[] = [];
+    await page.route(/availability\.json/, (route) => {
+      feedRequests.push(route.request().url());
+      return mockFeed(FEED)(route);
+    });
+    // RMS-38/360 flies the I161W (built for it), so its row on the case page gets a badge.
+    await page.goto("/case/rms-38-360", { waitUntil: "networkidle" });
+    await expect(page.getByText("In stock · 3 vendors").first()).toBeVisible();
+    // The whole page shares one fetch, however many reloads it lists.
+    expect(feedRequests.length).toBe(1);
   });
 });

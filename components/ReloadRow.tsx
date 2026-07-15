@@ -4,6 +4,7 @@ import type { AdapterSystem, Reload } from "@/lib/data/types";
 import type { FitKind } from "@/lib/resolve";
 import { formatImpulse, formatThrust, formatDelays, propLabel } from "@/lib/format";
 import { AvailabilityBadge, CertBadge, FitBadge, PluggedBadge, SparkyBadge } from "./badges";
+import AvailabilitySignal from "./Availability";
 
 /** One reload as a selectable row: designation + specs + status badges. Used in the
  *  case→reloads list. Clicking picks it for the shopping list. */
@@ -51,6 +52,7 @@ export default function ReloadRow({
         <PluggedBadge reload={reload} />
         <SparkyBadge reload={reload} />
         <AvailabilityBadge reload={reload} />
+        <AvailabilitySignal manufacturer={reload.manufacturer} designation={reload.designation} />
       </div>
     </button>
   );
