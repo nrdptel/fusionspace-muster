@@ -137,6 +137,36 @@ latent type gap: Loki markets its largest hardware as **76 mm** (AeroTech/Cesaro
 through. 76 is now in the union (and Cesaroni's grain ladder is keyed by *its* diameters, not the
 whole union, so it stays exhaustive without demanding a 76 mm Cesaroni size that doesn't exist).
 
+A second layer of the mirror contract guards the facts that are **derivable from a reload's own
+fields**, so a mismatch is a mis-keyed refresh rather than a judgement call — the classes of error
+that can steer a flyer to the wrong hardware, caught before the merged-graph contract even runs.
+Each reload's `system` must be the one its manufacturer implies (AeroTech→RMS, Cesaroni→Pro,
+Loki→Loki — the shopping list keys its wording off `system`); every reload must carry a `caseInfo`
+(the membership rule); its `diameter` must equal the bore embedded in that `caseInfo` string
+("RMS-38/360", "Pro38-3G", Loki "38/120" — a diameter that disagrees would make every fit computed
+from it wrong); its `plugged`/`ejectionCharge` flags must agree with the delays (a `"P"` reload is
+plugged and carries no ejection charge — a deployment-safety fact); and `avgThrustN` is stored as a
+whole newton, the label convention. That last one closed a real inconsistency the reconcile below
+surfaced: the Loki import had mirrored 13 reloads' average thrust at raw two-decimal precision
+(`80.46`, `234.62`) while every AeroTech/Cesaroni row stored the rounded integer, so a stray
+`avgThrustN` could have read back as "I234.62". Rounding those to whole newtons is display-invariant
+(the UI already rounds thrust), and the invariant now prevents the drift from recurring.
+
+The integrity *test* can't see the one thing a static mirror is always at risk of — **drift from the
+live source** (a new certification, an availability flip, a corrected weight). That gap is closed by a
+reproducible refresh/audit tool, `scripts/reconcile-reloads.mjs` (run via `npm run reconcile`). It
+fetches the in-scope reloads from the ThrustCurve API, applies the *same* scope + normalization the
+mirror uses — the one authoritative statement of membership (the three modeled brands, at the
+diameters Muster covers, with a case) and of how each source field maps in — and diffs the result
+against the committed file, reporting motors new on ThrustCurve, motors the mirror carries that
+ThrustCurve no longer lists in scope, and any *material* field change (numeric comparison is
+tolerance-based, so sub-unit rounding noise between two fetches isn't mistaken for a revision). It's
+read-only and reaches the network only when a human runs it, so the static export stays hermetic and
+CI stays offline; a maintainer runs it, reviews each finding against the reload's instructions and the
+cert org, and applies only what's warranted. The **2026-07-15** run reconciled clean: 541 in scope on
+both sides, zero additions, zero removals, zero material field changes — the catalog is current — and
+its only finding, the Loki precision inconsistency above, is now fixed and guarded.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
@@ -338,8 +368,10 @@ markup and, on the home page, more structured data than the Motor Finder — wit
 the SVG favicon now declares `sizes="any"` in the head, matching the manifest and the siblings.
 
 **Maturity note (2026-07):** the tool is at a plateau. Content is tapped out (new systems blocked on an
-external change); the data is freshly audited and now guarded on both the source mirror
-(`lib/data/reloads.test.ts`) and the merged graph (`lib/validate.ts`); the URL/sharing contract, the
+external change); the data is freshly audited — reconciled against live ThrustCurve on 2026-07-15 (clean, no drift) via
+the reusable `npm run reconcile` tool — and now guarded on both the source mirror
+(`lib/data/reloads.test.ts`, structure + derivable safety invariants) and the merged graph
+(`lib/validate.ts`); the URL/sharing contract, the
 resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
 page in light and dark; the head/PWA markup is at sibling parity. Three substantial user-facing moves have
