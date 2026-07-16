@@ -622,6 +622,14 @@ summary of what changed — "RMS-38/360 case selected. 12 reloads it can fly." t
 I161W in the RMS-38/360 case." — a count, never the whole list. An e2e test drives both directions and
 asserts the announcement.
 
+The reload **search** had the same silent-update problem, one step earlier: typing in the search box
+re-filters the list and updates a "N matches" count, but a screen-reader user heard nothing — the
+count was a plain paragraph. That count is now a polite live region too (`aria-live` on the visible
+count, so there's one source of truth rather than a shadow sr-only node; plain `aria-live` rather than
+`role="status"` keeps it distinct from the selection region above, which the e2e targets by role), so a
+search over 500-plus reloads announces "12 matches" as the flyer types. An e2e test types a query and
+asserts the announced number matches the rendered results.
+
 ## 3. Decisions (resolved)
 
 - **Scope of v1:** the full AeroTech RMS line, both directions, the shopping list, and the
