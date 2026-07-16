@@ -1,0 +1,96 @@
+name: Reconcile reload mirror
+
+# Watches the safety-critical reload mirror (lib/data/reloads.json) for drift from live
+# ThrustCurve — a new certification, an availability flip, a corrected weight, a new or
+# withdrawn motor. The integrity test (in CI on every push) proves the committed file is
+# well-formed; it can't see the source moving underneath it. `npm run reconcile` can, but only
+# when a human remembers to run it. This runs it on a cadence and turns any drift into an
+# actionable issue, so freshness stops depending on memory.
+#
+# It never touches the build/deploy path (the static export stays hermetic) — this is a
+# separate maintenance job that reaches the network, reviews, and reports. It does NOT edit the
+# mirror: a maintainer reviews each finding against the reload's printed instructions and the
+# cert org, then updates the data by hand — the same conservative bar every data change clears.
+#
+# Triggers:
+#   - schedule (monthly): catch drift roughly once a month.
+#   - workflow_dispatch: run it on demand from the Actions tab.
+# NOTE: a schedule/dispatch trigger only fires once this file is on the default branch.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 1 * *" # 12:00 UTC on the 1st of each month
+
+concurrency:
+  group: reconcile-reloads
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write # open/update a drift issue when the mirror lags the source
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # bound the network step; the reconcile fetch has no timeout of its own
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Reconcile against live ThrustCurve
+        id: reconcile
+        run: |
+          set +e
+          node scripts/reconcile-reloads.mjs | tee reconcile-report.txt
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          # 0 = in sync (nothing to do). 1 = material drift (open an issue below).
+          # >=2 = the reconcile itself errored (e.g. ThrustCurve unreachable) — fail visibly,
+          # but don't file a misleading "drift" issue for a transient network problem.
+          if [ "$code" -ge 2 ]; then exit "$code"; fi
+          exit 0
+
+      - name: File a drift issue
+        if: steps.reconcile.outputs.exit_code == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('reconcile-report.txt', 'utf8').trim();
+            const label = 'data-drift';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              'The scheduled reconcile found the reload mirror out of sync with live ThrustCurve.',
+              '',
+              'Review each item against the reload’s printed instructions and the certifying body, then update `lib/data/reloads.json` (and bump `_fetched`) for anything that checks out. Run `npm run reconcile` locally to confirm it clears.',
+              '',
+              '```',
+              report,
+              '```',
+              '',
+              `— [scheduled reconcile run](${runUrl})`,
+            ].join('\n');
+            // Comment on an existing open drift issue rather than piling up duplicates month after month.
+            const open = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: label, per_page: 1,
+            });
+            if (open.data.length) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: open.data[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: 'Reload mirror: ThrustCurve drift detected', labels: [label], body,
+              });
+            }
