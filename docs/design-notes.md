@@ -292,6 +292,24 @@ a shopping aid shouldn't point you at hardware you can't purchase. Loki's build-
 same one every system passes (`lib/validate.ts`), and a Loki reload can no more resolve to AeroTech
 or Cesaroni hardware than the reverse.
 
+A **re-verification against Loki's current sources (2026-07)** — the newest system, and the last one
+that hadn't been re-audited after its initial build — confirmed the whole model holds, with no
+corrections. The 54 mm and 76 mm instruction sheets still split parts into a reusable "Motor Hardware"
+set (**case + forward bulkhead + graphite nozzle**, verbatim) and a "Reload Kit" that carries no
+closures or nozzle; the graphite nozzle is still throat-number-matched ("a number is engraved on each
+nozzle… use the number listed in the table"); the store still sells a standalone **54 mm extended
+bulkhead** for the longer reloads; **98 mm remains on hold** ("all production of 98 mm hardware is on
+hold"), so the omission stands; 38/54/76 mm are still the only purchasable diameters (29 mm out of
+production, 152 mm by request, 98 mm on hold); and Loki still publishes **no spacer/adapter system**.
+All seven source links surfaced in the UI resolve (HTTP 200). Two additive findings were reviewed and
+**deliberately not modeled**: (1) new *experimental* parts now listed in 54/76 mm (a hockey-puck
+bulkhead, a nozzle carrier, extra retaining rings) — optional advanced hardware that changes no fit,
+and modeling it would drift Muster toward a parts catalogue it isn't; and (2) a store note that
+"all 38/1200 reloads are now sold as plugged motors with tracking smoke only" — a reload delay/plug
+fact, which is ThrustCurve's to record and the printed instructions' to authorize, not the hardware
+graph's. With this, **all three systems have now been re-verified against primary sources** (AeroTech
+38RAS and Cesaroni spacers, the closures/seal discs, and now Loki).
+
 ### Cross-brand crossloads (the one exception to the brand wall)
 
 The whole graph is built on the rule that hardware never crosses brands — the resolver's
@@ -392,7 +410,9 @@ the SVG favicon now declares `sizes="any"` in the head, matching the manifest an
 
 **Maturity note (2026-07):** the tool is at a plateau. Content is tapped out (new systems blocked on an
 external change); the data is freshly audited — reconciled against live ThrustCurve on 2026-07-15 (clean, no drift) via
-the reusable `npm run reconcile` tool — and now guarded on both the source mirror
+the reusable `npm run reconcile` tool, and **all three systems' hardware graphs now re-verified against
+primary manufacturer sources** (AeroTech 38RAS + Cesaroni spacers, closures/seal discs, and Loki — the
+last, 2026-07, holding with no corrections) — and now guarded on both the source mirror
 (`lib/data/reloads.test.ts`, structure + derivable safety invariants) and the merged graph
 (`lib/validate.ts`); the URL/sharing contract, the
 resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
