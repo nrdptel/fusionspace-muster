@@ -167,6 +167,17 @@ cert org, and applies only what's warranted. The **2026-07-15** run reconciled c
 both sides, zero additions, zero removals, zero material field changes — the catalog is current — and
 its only finding, the Loki precision inconsistency above, is now fixed and guarded.
 
+Freshness no longer depends on someone *remembering* to run it. A scheduled workflow
+(`.github/workflows/reconcile.yml`, monthly + on-demand via `workflow_dispatch`) runs the same
+reconcile against live ThrustCurve and turns drift into an **actionable GitHub issue** — the report,
+verbatim, with a pointer to review each item against the instructions and the cert org before touching
+the data. It's deliberately kept off the build/deploy path (that must stay hermetic and offline): this
+is a separate maintenance job that reaches the network, and it never edits the mirror — a human still
+makes every data change by hand. The workflow distinguishes *drift* (reconcile exit 1 → open or
+comment on a single `data-drift` issue, so months of drift don't pile up duplicates) from an *error*
+(exit ≥ 2, e.g. ThrustCurve unreachable → the job fails visibly rather than filing a misleading drift
+report), and does nothing when the mirror is in sync.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
@@ -381,10 +392,13 @@ the shopping list (delivering the "each part links to its source" promise the UI
 all below). The availability
 badge now covers **case pages** too: once the Motor Finder published a **bulk `availability.json`**,
 Muster switched from parsing each motor's ~110 KB page to one shared ~28 KB feed fetch, which retired
-both the per-view cost and the single-reload scoping. Remaining known candidates are externally blocked
-or gated on a maintainer decision: a fourth motor system and the Loft footer link (both wait on an
-external change); and physical **case-hardware** dimensions (Tier 2 below — the part that would drift
-toward a spec sheet and can't yet be cleanly sourced).
+both the per-view cost and the single-reload scoping. Mirror **freshness is now automated** too — a
+scheduled `reconcile.yml` workflow runs the reconcile monthly and files a `data-drift` issue if
+ThrustCurve moves under the catalog, so the source-fidelity check no longer depends on memory (above).
+Remaining known candidates are externally blocked or gated on a maintainer decision: a fourth motor
+system and the Loft footer link (both wait on an external change); and physical **case-hardware**
+dimensions (Tier 2 below — the part that would drift toward a spec sheet and can't yet be cleanly
+sourced).
 (`lib/og-mark.ts`, once listed here, is a generated base64 data-URI constant, not logic — nothing to
 test.) Absent one of those unblocks, further work here is polish, not a needle-mover.
 
