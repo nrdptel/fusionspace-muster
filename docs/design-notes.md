@@ -550,10 +550,15 @@ line the crossload cautions already used, now extracted into one shared `SourceL
 and the two crossload panels render, so provenance looks and reads identically everywhere. The host
 label comes from a pure, tested `sourceHost()` (`lib/links.ts`) that degrades to the raw string rather
 than throwing on a malformed URL, and a catalog-wide test asserts every reload's source resolves to a
-non-empty label. It's **print-safe** — provenance belongs on the paper parts sheet you take to the
-bench — and an e2e test asserts a reusable part surfaces a real external source link. The copy-list
-text is deliberately left terse (no URLs) — the on-screen and printed list carry the links; the
-pasteable order stays clean.
+non-empty label. The line also **dedupes by host** (`distinctSourceHosts()`): a node can cite two
+pages on one domain — the crossloads name Cesaroni's FAQ *and* its Pro75 instructions, both pro38.com
+— which labelled by host alone read as a confusing "pro38.com, pro38.com"; the citation now attributes
+each domain once (the full URL list stays in the data). This one was caught by a real-browser
+screenshot pass, not a test — axe and HTTP checks can't see a doubled label. It's **print-safe** —
+provenance belongs on the paper parts sheet you take to the bench — and e2e tests assert a reusable
+part surfaces a real external source link and that the crossload line shows `pro38.com` exactly once.
+The copy-list text is deliberately left terse (no URLs) — the on-screen and printed list carry the
+links; the pasteable order stays clean.
 
 ### The kit planner (companion tool)
 

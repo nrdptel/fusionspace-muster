@@ -1,4 +1,4 @@
-import { sourceHost } from "@/lib/links";
+import { distinctSourceHosts } from "@/lib/links";
 
 /** The "Source: host, host" provenance line, shared by every sourced node in the UI — the
  *  shopping list's reusable parts and reload, and the crossload cautions. Muster's credibility
@@ -17,21 +17,22 @@ export default function SourceLinks({
   /** Wrapper classes — the caller sets the muted colour for its context. */
   className?: string;
 }) {
-  if (sources.length === 0) return null;
-  const heading = label ?? (sources.length === 1 ? "Source" : "Sources");
+  const hosts = distinctSourceHosts(sources);
+  if (hosts.length === 0) return null;
+  const heading = label ?? (hosts.length === 1 ? "Source" : "Sources");
   return (
     <p className={className}>
       {heading}:{" "}
-      {sources.map((s, i) => (
-        <span key={s}>
+      {hosts.map(({ host, url }, i) => (
+        <span key={host}>
           {i > 0 ? ", " : ""}
           <a
-            href={s}
+            href={url}
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-2 transition-opacity hover:opacity-70"
           >
-            {sourceHost(s)}
+            {host}
           </a>
         </span>
       ))}

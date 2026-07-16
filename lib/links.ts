@@ -39,6 +39,19 @@ export function sourceHost(url: string): string {
   }
 }
 
+/** Distinct source hosts in order, each paired with the first URL that has that host. A node can
+ *  cite two pages on one domain (e.g. Cesaroni's FAQ and its Pro75 instructions, both pro38.com);
+ *  labelled by host alone those would read as a confusing "pro38.com, pro38.com", so the citation
+ *  attributes each domain once. The full URL list stays in the data for anyone who wants it. */
+export function distinctSourceHosts(sources: string[]): { host: string; url: string }[] {
+  const byHost = new Map<string, string>();
+  for (const url of sources) {
+    const host = sourceHost(url);
+    if (!byHost.has(host)) byHost.set(host, url);
+  }
+  return [...byHost].map(([host, url]) => ({ host, url }));
+}
+
 // Data sources — credited in the footer and the methodology.
 export const THRUSTCURVE_URL = "https://www.thrustcurve.org";
 export const AEROTECH_URL = "https://www.aerotech-rocketry.com";
