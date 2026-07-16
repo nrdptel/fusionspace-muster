@@ -89,7 +89,12 @@ export default function ReloadPicker({
         />
       </div>
 
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+      {/* A polite live region so a screen-reader user searching by keystroke hears how many reloads
+          matched — otherwise the list updates silently and the count is invisible to them. Kept on
+          the visible count (not a separate sr-only node) so there's one source of truth, and uses
+          aria-live rather than role="status" so it stays distinct from the tool's selection
+          announcement (MusterApp) that the e2e targets by role. */}
+      <p aria-live="polite" aria-atomic="true" className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
         {matches.length} match{matches.length === 1 ? "" : "es"}
         {matches.length > CAP ? ` — showing the first ${CAP}` : ""}
       </p>

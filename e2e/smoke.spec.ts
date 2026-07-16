@@ -377,3 +377,20 @@ test("the reload picker lists search results in ascending impulse order", async 
   // Rendered order must already be sorted ascending.
   expect(impulses).toEqual([...impulses].sort((a, b) => a - b));
 });
+
+test("the reload search announces its result count to assistive tech", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByRole("radio", { name: "I have a reload" }).click();
+
+  // The match count is a polite live region, so a screen-reader user hears how many reloads matched
+  // as they type — the search's counterpart to the selection announcement. axe can't see this.
+  const count = page.locator('#tool p[aria-live="polite"]');
+  await expect(count).toHaveText(/\d+ matches/);
+
+  // Narrowing the search updates the announced number, and it matches what's actually rendered.
+  await page.getByRole("searchbox", { name: /Search reloads/ }).fill("I161");
+  await expect(count).toHaveText(/\d+ match(es)?/);
+  const announced = Number(((await count.textContent()) ?? "").match(/(\d+) match/)?.[1]);
+  expect(announced).toBeGreaterThan(0);
+  await expect(page.locator('#tool button:has-text("N·s")')).toHaveCount(announced);
+});
