@@ -291,6 +291,9 @@ test("cross-brand crossload shows on a 98 mm case page, framed as a caution with
   // …and carries AeroTech's advisory-against note for this direction, plus a source.
   await expect(section.getByText(/AeroTech recommends against|forward seal disc/)).toBeVisible();
   await expect(section.getByRole("link", { name: /pro38\.com/ }).first()).toBeVisible();
+  // The provenance line dedupes by host: two pro38.com source pages read as one "pro38.com"
+  // citation, not a confusing "pro38.com, pro38.com".
+  await expect(section.getByRole("link", { name: "pro38.com", exact: true })).toHaveCount(1);
 });
 
 test("cross-brand crossload shows on a reload page, pointing at the foreign case", async ({ page }) => {

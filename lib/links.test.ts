@@ -1,6 +1,32 @@
 import { describe, it, expect } from "vitest";
-import { checkStockUrl, MOTOR_FINDER_URL, sourceHost } from "./links";
+import { checkStockUrl, MOTOR_FINDER_URL, sourceHost, distinctSourceHosts } from "./links";
 import { allReloads } from "./graph";
+
+describe("distinctSourceHosts", () => {
+  it("collapses two pages on the same domain to one labelled citation", () => {
+    // The crossload case: Cesaroni's FAQ + Pro75 instructions are both pro38.com, and an AeroTech
+    // announcement on facebook.com — the line should read "pro38.com, facebook.com", not repeat.
+    const out = distinctSourceHosts([
+      "https://pro38.com/frequently-asked-questions/",
+      "https://pro38.com/wp-content/uploads/2024/11/Pro75_Instructions.pdf",
+      "https://www.facebook.com/flyaerotech/posts/123",
+    ]);
+    expect(out.map((s) => s.host)).toEqual(["pro38.com", "facebook.com"]);
+  });
+
+  it("keeps the first URL for each host, in order", () => {
+    const out = distinctSourceHosts([
+      "https://pro38.com/a",
+      "https://pro38.com/b",
+    ]);
+    expect(out).toEqual([{ host: "pro38.com", url: "https://pro38.com/a" }]);
+  });
+
+  it("passes distinct hosts through unchanged, and handles the empty list", () => {
+    expect(distinctSourceHosts(["https://aerotech-rocketry.com/x", "https://apogeerockets.com/y"])).toHaveLength(2);
+    expect(distinctSourceHosts([])).toEqual([]);
+  });
+});
 
 describe("sourceHost", () => {
   it("strips the scheme, a leading www., and any path to a bare host label", () => {
