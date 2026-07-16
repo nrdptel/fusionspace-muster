@@ -178,6 +178,18 @@ comment on a single `data-drift` issue, so months of drift don't pile up duplica
 (exit ≥ 2, e.g. ThrustCurve unreachable → the job fails visibly rather than filing a misleading drift
 report), and does nothing when the mirror is in sync.
 
+A monitor is only as trustworthy as its own logic, so the reconcile's heart is **unit-tested**
+(`scripts/reconcile-reloads.test.mjs`, run in CI — the vitest `include` was widened to pick up
+`scripts/`). The scope rule, the ThrustCurve→mirror normalization, the tolerance-based `materialDiff`,
+and the `diffMirror` partition are pure functions, exercised directly with synthetic records: an
+in-scope brand at a covered diameter is kept and an 18 mm or Loki-98 motor dropped; each cert body
+abbreviates and an impossible propellant-heavier-than-loaded weight is discarded; a 1 mm length wobble
+reads as noise while an 8 mm one is a revision; new / withdrawn / changed motors partition by id. The
+failure mode this guards is the quiet one — a bug that reports a *changed* motor as "in sync" would
+sail through a green run and silently blind the monitor, which is worse than no monitor at all. (The
+`diffMirror` partition was extracted out of the script's `main()` precisely so it could be tested
+without the network.)
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them

@@ -119,6 +119,25 @@ export function materialDiff(committed, live) {
   return diffs;
 }
 
+/** Partition the freshly-normalized live catalog against the committed mirror, keyed by motorId:
+ *  motors new on ThrustCurve, motors the mirror carries that live scope no longer lists, and
+ *  matched motors whose fields have materially changed. Pure — the testable heart of the audit,
+ *  so a bug here (a missed change reported as "in sync") fails a unit test, not a flyer. */
+export function diffMirror(committed, live) {
+  const committedById = new Map(committed.map((r) => [r.motorId, r]));
+  const liveById = new Map(live.map((r) => [r.motorId, r]));
+  const added = live.filter((r) => !committedById.has(r.motorId));
+  const removed = committed.filter((r) => !liveById.has(r.motorId));
+  const changed = [];
+  for (const l of liveById.values()) {
+    const c = committedById.get(l.motorId);
+    if (!c) continue;
+    const diffs = materialDiff(c, l);
+    if (diffs.length) changed.push({ committed: c, diffs });
+  }
+  return { added, removed, changed };
+}
+
 async function fetchReloads(brand) {
   const res = await fetch(API, {
     method: "POST",
@@ -133,22 +152,11 @@ async function fetchReloads(brand) {
 async function main() {
   const { readFileSync } = await import("node:fs");
   const mirror = JSON.parse(readFileSync(MIRROR_PATH, "utf8"));
-  const committedById = new Map(mirror.reloads.map((r) => [r.motorId, r]));
 
   const raw = [];
   for (const brand of Object.keys(SCOPE_DIAMETERS)) raw.push(...(await fetchReloads(brand)));
   const live = raw.filter(inScope).map(normalize);
-  const liveById = new Map(live.map((r) => [r.motorId, r]));
-
-  const added = live.filter((r) => !committedById.has(r.motorId));
-  const removed = mirror.reloads.filter((r) => !liveById.has(r.motorId));
-  const changed = [];
-  for (const live of liveById.values()) {
-    const committed = committedById.get(live.motorId);
-    if (!committed) continue;
-    const diffs = materialDiff(committed, live);
-    if (diffs.length) changed.push({ committed, diffs });
-  }
+  const { added, removed, changed } = diffMirror(mirror.reloads, live);
 
   console.log(`ThrustCurve in-scope: ${live.length}   mirror: ${mirror.reloads.length}   (last fetched ${mirror._fetched})\n`);
 
