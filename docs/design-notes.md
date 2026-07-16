@@ -434,6 +434,24 @@ sourced).
 (`lib/og-mark.ts`, once listed here, is a generated base64 data-URI constant, not logic — nothing to
 test.) Absent one of those unblocks, further work here is polish, not a needle-mover.
 
+**Launch readiness (2026-07):** the hub still lists Muster under "in development," but Muster's own
+side is **verified launch-ready** — a full pass over the launch-critical surfaces found no gap to fix:
+the site is indexable (`robots.txt` allows all, matching the siblings) with a complete sitemap and
+per-entity canonicals; the live HTML carries production-correct `og:*` / `twitter:*` / `canonical` /
+`manifest` tags against `muster.fusionspace.co`; the OG card renders (a real 1200×630 PNG from the
+family template); the manifest is complete (standalone, maskable 192/512 icons); the security headers
+(`public/_headers`) are in place; and every launch asset serves 200 (OG, `icon.svg`, `apple-icon`,
+PWA icons, manifest, `sw.js`, `robots.txt`). There is **no pre-launch/beta copy** anywhere in the tool.
+One apparent gap was checked and dismissed: `/favicon.ico` 404s, but that's the **dominant family
+convention** — the Motor Finder, Charge, and the hub all 404 on it and serve `/icon.svg` instead (only
+Window carries a `.ico`), so Muster is correctly SVG-icon-only; adding a `favicon.ico` would diverge
+from the siblings it mirrors, not align with them. The remaining launch steps are therefore **external
+to this repo** and a maintainer's call: (1) flip Muster's hub entry from "in development" to live, and
+(2) add Muster to the *launched* siblings' footers — the reciprocal of Muster's own `SIBLING_TOOLS`
+list, using an entry shaped like the others, e.g. `{ name: "Muster", href:
+"https://muster.fusionspace.co", blurb: "Motor-hardware compatibility" }`. When Muster is live, its own
+footer (which lists only live siblings) needs no change — it already omits itself.
+
 ### Print — a paper parts sheet
 
 Chosen off that maturity note as the first substantial user-facing capability: the tool had no print
