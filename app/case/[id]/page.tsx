@@ -9,6 +9,7 @@ import CrossloadReloads from "@/components/CrossloadReloads";
 import EntityFrame from "@/components/EntityFrame";
 import AvailabilitySignal from "@/components/Availability";
 import { caseJsonLd } from "@/lib/jsonld";
+import { socialCard } from "@/lib/seo";
 
 // Every case id is known at build time; anything else 404s (no on-demand rendering on a
 // static export).
@@ -34,8 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path, type: "website" },
-    twitter: { title, description },
+    ...socialCard({ title, description, url: path }),
   };
 }
 

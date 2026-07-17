@@ -11,6 +11,7 @@ import SourceLinks from "@/components/SourceLinks";
 import EntityFrame from "@/components/EntityFrame";
 import AvailabilitySignal from "@/components/Availability";
 import { reloadJsonLd } from "@/lib/jsonld";
+import { socialCard } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -35,8 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path, type: "website" },
-    twitter: { title, description },
+    ...socialCard({ title, description, url: path }),
   };
 }
 
