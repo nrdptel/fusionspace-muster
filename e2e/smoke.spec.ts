@@ -397,3 +397,32 @@ test("the reload search announces its result count to assistive tech", async ({ 
   expect(announced).toBeGreaterThan(0);
   await expect(page.locator('#tool button:has-text("N·s")')).toHaveCount(announced);
 });
+
+test("the theme toggle survives storage being blocked (reading localStorage throws)", async ({ page }) => {
+  // In some contexts — a sandboxed frame, a browser set to block all site storage — even *reading*
+  // localStorage throws, not just writing. The theme toggle reads the saved choice on mount; if that
+  // read isn't guarded, it breaks the mount effect and the toggle goes inert (and throws). Simulate a
+  // storage-blocked browser by making getItem throw, then prove the toggle still mounts and works.
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = function () {
+      throw new Error("storage blocked");
+    };
+  });
+
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  // It falls back to System (the saved choice couldn't be read) and is fully interactive…
+  const toggle = page.getByRole("button", { name: /Color theme/i });
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-label", /System/);
+
+  // …clicking cycles System → Light and actually applies the theme (proving the effect isn't inert).
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-label", /Light/);
+  await expect(page.locator("html")).toHaveClass(/light/);
+
+  // No uncaught error leaked from the blocked read.
+  expect(errors).toEqual([]);
+});

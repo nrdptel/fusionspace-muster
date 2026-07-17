@@ -27,7 +27,14 @@ export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(KEY) as Theme | null;
+    let stored: Theme | null = null;
+    try {
+      stored = localStorage.getItem(KEY) as Theme | null;
+    } catch {
+      /* storage disabled/blocked (private mode, sandboxed frame) — reading throws in some
+         browsers, so fall back to System. Must not let it break the effect: setMounted below
+         still has to run or the toggle stays inert. Mirrors the guarded write and layout script. */
+    }
     if (stored === "light" || stored === "dark" || stored === "system") {
       setTheme(stored);
     }
