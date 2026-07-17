@@ -615,6 +615,16 @@ tool (the existing `?have=…` deep link), so search traffic lands on a real ans
 live version. It mirrors the Motor Finder's per-motor pages, and the entity — not "Muster" — is each
 page's `h1`. A `sitemap.test.ts` holds the sitemap to the data, so a new entity can't ship undiscoverable.
 
+These deep pages are the ones people actually share, so they carry a proper **social card**. That took
+fixing a subtle trap: Next.js *replaces* — never deep-merges — a page's `openGraph`/`twitter` over the
+root layout's, so the case and reload pages, which set their own title/description without re-stating the
+image, were silently shipping an imageless `summary` card while only the home page shared richly. The
+social metadata now flows through one `socialCard()` helper in `lib/seo.ts` that always attaches the
+shared branded card image (the build-time `og/default.png`, the family template) and the
+`summary_large_image` type — the layout and both deep pages all build their card through it, and a unit
+test holds the contract so a page can't drop the image again. A shared link to any case or reload now
+renders the same branded 1200×630 card, with the entity's name in the card copy.
+
 Each entity page also carries **schema.org structured data** (`lib/jsonld.ts`, pure and tested),
 mirroring the Motor Finder again: one `@graph` per page with a `Product` node (name, SKU/MPN, brand,
 category, and the entity's real facts as `additionalProperty` — impulse class, total impulse, thrust,

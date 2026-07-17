@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { observancesForDate } from "@/lib/observances";
-import { SITE_TITLE as TITLE, SITE_DESCRIPTION as DESCRIPTION } from "@/lib/seo";
+import { SITE_TITLE as TITLE, SITE_DESCRIPTION as DESCRIPTION, socialCard } from "@/lib/seo";
 import ServiceWorker from "@/components/ServiceWorker";
 import "./globals.css";
 
@@ -10,11 +10,6 @@ import "./globals.css";
 // production site; a fork can override with NEXT_PUBLIC_SITE_URL on its deploy
 // host (Cloudflare Pages) to point cards at its own domain. Mirrors the siblings.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://muster.fusionspace.co";
-
-// Pre-generated at build by scripts/gen-og.mjs (a static export can't render the dynamic
-// next/og route at request time). Resolved absolutely against metadataBase. Uses the HPR
-// Motor Finder's exact card template so the family reads as one.
-const OG_IMAGE = "/og/default.png";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -36,20 +31,7 @@ export const metadata: Metadata = {
     icon: { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
     apple: { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
   },
-  openGraph: {
-    type: "website",
-    siteName: "Muster",
-    title: TITLE,
-    description: DESCRIPTION,
-    url: "/",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: TITLE }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
-    images: [OG_IMAGE],
-  },
+  ...socialCard({ title: TITLE, description: DESCRIPTION, url: "/" }),
 };
 
 export const viewport: Viewport = {
