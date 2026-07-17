@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { inScope, normalize, materialDiff, diffMirror } from "./reconcile-reloads.mjs";
+import { inScope, normalize, materialDiff, diffMirror, EXACT_FIELDS, NUM_TOLERANCE } from "./reconcile-reloads.mjs";
 
 // The scheduled reconcile (.github/workflows/reconcile.yml) is a safety mechanism: it watches the
 // committed reload mirror for drift from live ThrustCurve and files an issue when the source moves.
@@ -162,5 +162,23 @@ describe("diffMirror — partitioning the catalog against the mirror", () => {
     expect(changed).toHaveLength(1);
     expect(changed[0].committed.motorId).toBe("b");
     expect(changed[0].diffs[0]).toContain("availability");
+  });
+});
+
+// The completeness guard on the drift detector itself. materialDiff only compares the fields listed
+// in EXACT_FIELDS + NUM_TOLERANCE, but `normalize` decides which fields the mirror actually carries.
+// If those drift apart, the monitor blinds itself *silently*: a field added to the mirror but not to
+// the compare lists would drift on ThrustCurve with the reconcile still reporting "in sync," and a
+// typo'd compare-field name would forever diff undefined-against-undefined and never fire. Neither
+// shows up in any other test — a green run, no issue, false confidence. Tie the two together so a
+// future field can't be mirrored without also being watched (motorId is the join key diffMirror
+// matches on, not a change field, so it's the one normalized key that's intentionally not compared).
+describe("field coverage — every mirrored field is actually watched for drift", () => {
+  it("compares exactly the fields normalize() produces, minus the motorId join key", () => {
+    const normalized = new Set(Object.keys(normalize(raw())));
+    normalized.delete("motorId");
+    const compared = new Set([...EXACT_FIELDS, ...Object.keys(NUM_TOLERANCE)]);
+    // Sorted arrays give a readable diff naming the offending field on either kind of failure.
+    expect([...compared].sort()).toEqual([...normalized].sort());
   });
 });

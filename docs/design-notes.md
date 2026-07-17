@@ -190,6 +190,16 @@ sail through a green run and silently blind the monitor, which is worse than no 
 `diffMirror` partition was extracted out of the script's `main()` precisely so it could be tested
 without the network.)
 
+One quiet failure the diff-logic tests couldn't see is a *coverage* gap: `materialDiff` only watches
+the fields in `EXACT_FIELDS` + `NUM_TOLERANCE`, while `normalize` decides which fields the mirror
+carries — and if those two drift apart the monitor blinds itself with a green run. A field added to
+the mirror but not to the compare lists (the Tier-1 length/weight were exactly such an addition) would
+drift on ThrustCurve while the reconcile still says "in sync"; a typo'd compare-field name would diff
+`undefined` against `undefined` forever and never fire. So a completeness test ties the two together:
+the set of fields `normalize` produces (minus `motorId`, the join key `diffMirror` matches on) must
+equal the set `materialDiff` compares. A future safety field can't be mirrored without also being
+watched, and a mistyped field name fails CI instead of silently going dark.
+
 ### The one genuinely hard call: spacers
 
 AeroTech has two different ways to fly a shorter reload in a longer case, and conflating them
