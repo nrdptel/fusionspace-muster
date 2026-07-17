@@ -469,7 +469,12 @@ service-worker toast, the footer's link row, the monthly observance bar). The **
 `File → Print` a reload's page and get the hardware to buy, the part numbers, the conservative notes, and
 the **safety authority line** (kept on paper by design) to take to the bench. No new data, no sourcing
 risk — it's presentation of already-sourced content. An e2e test (`e2e/print.spec.ts`) drives the print
-media type and asserts the split: reference content prints, interactive chrome doesn't.
+media type and asserts the split for **both** deep-link page types: reference content prints, interactive
+chrome doesn't. The case-page test runs on a *crossload* case, so the safety-critical extra — the
+cross-brand caution ("AeroTech advises against this") and its "certify in the hardware it's flown in" line
+— is proven to survive to paper, not just the green-light fits. (An earlier by-hand print audit rendered
+the pages to PDF and confirmed the chrome drops and the caution box carries; the case-page test locks that
+in so a future `print:hidden` slip can't silently ship a CTA or an accent bar onto the sheet.)
 
 ### Live availability from the Motor Finder (the one online touch)
 
