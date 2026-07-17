@@ -92,9 +92,9 @@ export function normalize(m) {
 // value and a fresh fetch can land on opposite sides of a rounding boundary (a ~1232.5 mm length
 // rounds to 1232 or 1233 depending on nothing that matters), so length allows 2 mm of slack — no
 // real ThrustCurve length revision is that small. The others are already at display precision.
-const NUM_TOLERANCE = { avgThrustN: 1, totImpulseNs: 0.5, lengthMm: 2, totalWeightG: 0.5, propWeightG: 0.5 };
+export const NUM_TOLERANCE = { avgThrustN: 1, totImpulseNs: 0.5, lengthMm: 2, totalWeightG: 0.5, propWeightG: 0.5 };
 // Categorical fields where any difference is material.
-const EXACT_FIELDS = [
+export const EXACT_FIELDS = [
   "designation", "commonName", "manufacturer", "impulseClass", "diameter", "caseInfo",
   "propName", "sparky", "delays", "delayAdjustable", "plugged", "ejectionCharge",
   "availability", "certOrg",
