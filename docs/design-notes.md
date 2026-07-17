@@ -23,9 +23,15 @@ Same hand as the hub, the Motor Finder, Charge, and Window — measured from tho
 - **Voice:** direct, a little warm, no hype. Safety is stated plainly and up top, not buried.
   Em dashes for asides.
 
-State lives in the URL (a resolved view is a shareable link); the only `localStorage` is the
-theme. No per-visitor server work — the whole dataset is bundled and the page resolves
-client-side, which is what keeps it on Pages' free tier and makes offline trivial.
+State lives in the URL (a resolved view is a shareable link); the only `localStorage` is
+convenience state — the theme choice and the kit planner's owned hardware — and every touch of
+it (the *read* as well as the write, plus the pre-paint theme script) is wrapped in a try/catch,
+so a browser that blocks site storage (private mode, a sandboxed frame, "block all cookies")
+degrades to defaults instead of throwing. That last part matters more than it looks: an unguarded
+storage *read* in a mount effect doesn't just fail quietly, it throws with no error boundary above
+it and takes the whole client render down — so the guard is what keeps the tool working, not just
+its saved preference. No per-visitor server work — the whole dataset is bundled and the page
+resolves client-side, which is what keeps it on Pages' free tier and makes offline trivial.
 
 ## 2. What Muster is, as a product
 
