@@ -417,7 +417,11 @@ last, 2026-07, holding with no corrections) — and now guarded on both the sour
 (`lib/validate.ts`); the URL/sharing contract, the
 resolver invariants, and the always-rendered observance chrome (`lib/observances.test.ts`) are all
 tested; accessibility is axe-audited across the tool, kit planner, both deep-link pages, and a crossload
-page in light and dark; the head/PWA markup is at sibling parity. Several substantial user-facing moves have
+page in light and dark; and the **headline offline promise itself is now driven end-to-end**
+(`e2e/offline.spec.ts`) — the suite loads the page, lets the service worker take control, cuts the
+network, and asserts the tool still renders *and resolves a case* from cache, so a service-worker or
+build-output regression that broke the field use case would fail CI instead of shipping. The head/PWA
+markup is at sibling parity. Several substantial user-facing moves have
 since come off this note by deliberate scope decision — **print** (paper parts sheet), **live
 availability** from the Motor Finder, **reload physical dimensions**, and **per-part source links** in
 the shopping list (delivering the "each part links to its source" promise the UI had only half-kept —
