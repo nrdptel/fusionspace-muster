@@ -63,3 +63,21 @@ for (const scheme of ["light", "dark"] as const) {
     await audit(page, `crossload/${scheme}`);
   });
 }
+
+test("honours prefers-reduced-motion by neutralising transitions", async ({ page }) => {
+  // The app's only motion is colour/opacity transitions, but a visitor who set "reduce motion" at the
+  // OS level shouldn't have it ignored. Prove the media query does its job: a normally-transitioning
+  // control (the theme toggle carries Tailwind's `transition`) animates by default and goes instant
+  // under the preference. axe can't see this — timing isn't in its ruleset.
+  await page.goto("/", { waitUntil: "networkidle" });
+  const toggle = page.getByRole("button", { name: /Color theme/i });
+  await expect(toggle).toBeVisible();
+  const duration = () => toggle.evaluate((el) => getComputedStyle(el).transitionDuration);
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  expect(await duration()).not.toBe("0s"); // a real transition by default
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reduced = await duration();
+  expect(Number.parseFloat(reduced)).toBeLessThan(0.01); // 0.01ms — effectively instant
+});

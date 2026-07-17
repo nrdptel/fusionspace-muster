@@ -65,6 +65,23 @@ summary:focus-visible,
   border-radius: 3px;
 }
 
+/* Honour a visitor's OS "reduce motion" setting (WCAG 2.3.3). Muster has no essential motion — only
+   colour/opacity transitions on hover and the theme switch, no movement or animation — but a person
+   who's asked their system for a static UI shouldn't have that preference ignored just because the
+   motion here is mild. Neutralise transitions/animations to near-instant; elements still reach their
+   end state, they just don't ease into it. The single-step animation guard covers any future looping
+   animation, and smooth scrolling drops to instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Pin <main> to the viewport width so a wide child can't stretch the layout past
    the screen on mobile (which would also leave the top accent bar short of the
    right edge); wide children scroll inside their own overflow containers. */

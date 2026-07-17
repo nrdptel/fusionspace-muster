@@ -639,7 +639,11 @@ content, not a new claim.
 The family's baseline, carried here: a skip-to-tool link, a single indigo `focus-visible` ring on
 every interactive control, the mode/system/diameter/sort switches as real ARIA radio groups
 (one tab stop, arrow keys move the selection), and the axe audit in CI over light and dark on the
-tool, both deep-link pages, and a crossload page.
+tool, both deep-link pages, and a crossload page. A visitor's OS **"reduce motion"** setting is
+honoured too (`globals.css`): the app's only motion is colour/opacity transitions — no movement or
+animation — but someone who's asked their system for a static UI shouldn't have that ignored, so
+under `prefers-reduced-motion` transitions collapse to instant (an e2e proves a normally-transitioning
+control goes to ~0 duration under the preference — timing axe can't check).
 
 One thing the axe audit *can't* see is a missing announcement: selecting a case or reload swaps a
 whole result panel and shopping list into the page with no scroll or focus change, so a sighted user
