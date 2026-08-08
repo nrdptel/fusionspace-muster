@@ -208,9 +208,9 @@ export default function KitPlanner() {
             </div>
             {cov.advisoryDiameters.length > 0 && (
               <p className="mt-3 text-xs leading-relaxed text-amber-700 dark:text-amber-400">
-                Your {cov.advisoryDiameters.join(" & ")} mm adapter can fly additional shorter
-                reloads that Muster doesn&apos;t resolve — confirm those against AeroTech&apos;s
-                instructions.
+                Your {cov.advisoryDiameters.join(" & ")}{" "}
+                mm adapter can fly additional shorter reloads that Muster doesn&apos;t resolve —
+                confirm those against AeroTech&apos;s instructions.
               </p>
             )}
           </div>

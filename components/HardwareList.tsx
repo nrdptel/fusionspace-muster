@@ -115,8 +115,8 @@ export default function HardwareList({
           </ul>
           <p className="mt-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
             Muster shows what to buy; the{" "}
-            <span className="font-medium text-zinc-600 dark:text-zinc-300">Motor Finder</span> shows where
-            it&apos;s in stock and for how much.
+            <span className="font-medium text-zinc-600 dark:text-zinc-300">Motor Finder</span>{" "}
+            shows where it&apos;s in stock and for how much.
           </p>
 
           <h4 className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
