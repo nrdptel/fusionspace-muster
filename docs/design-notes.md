@@ -11,15 +11,17 @@ Same hand as the hub, the Motor Finder, Charge, and Window — measured from tho
   the stock `zinc` palette, Geist Sans + Geist Mono, TypeScript. Deployed to Cloudflare Pages
   via `cloudflare/wrangler-action`, `pages deploy out --project-name=fusionspace-muster
   --branch=main`. PWA manifest + service worker, full OG/Twitter meta, JSON-LD, the shared
-  brand marks under `public/brand/`.
+  brand marks under `public/brand/` (the Rev C FusionSpace kit: the four-cone mark and its
+  horizontal lockup, Void on light and the gradient on dark).
 - **Palette:** `zinc` neutrals, `indigo` primary (buttons, focus ring, links, the selected
   state), `emerald` for a good/direct signal, `amber` for cautions. The brand mark's
-  violet→blue gradient reads on both themes.
+  orange→blue gradient reads on both themes.
 - **Chrome, reused verbatim:** the three-state theme toggle (`muster.theme`), the pre-paint
   theme script, the `FusionSpaceBadge` eyebrow, the Ko-fi "Tip" button, the footer (GitHub +
   sibling links + wordmark + non-affiliation line), the monthly observances bar, the
-  service-worker update toast, and the OG card generated from the Motor Finder's exact
-  template with only three strings changed.
+  service-worker update toast, and the OG card — now the brand kit's ready-made Rev C card for
+  Muster, committed as `public/og/default.png` (it was generated at build from the Motor Finder's
+  template until the Rev C rebrand).
 - **Voice:** direct, a little warm, no hype. Safety is stated plainly and up top, not buried.
   Em dashes for asides.
 
@@ -451,7 +453,7 @@ Remaining known candidates are externally blocked or gated on a maintainer decis
 system and the Loft footer link (both wait on an external change); and physical **case-hardware**
 dimensions (Tier 2 below — the part that would drift toward a spec sheet and can't yet be cleanly
 sourced).
-(`lib/og-mark.ts`, once listed here, is a generated base64 data-URI constant, not logic — nothing to
+(`lib/og-mark.ts`, once listed here and since removed, was a generated base64 data-URI constant, not logic — nothing to
 test.) Absent one of those unblocks, further work here is polish, not a needle-mover.
 
 **Launch readiness (2026-07):** the hub still lists Muster under "in development," but Muster's own
@@ -641,7 +643,7 @@ fixing a subtle trap: Next.js *replaces* — never deep-merges — a page's `ope
 root layout's, so the case and reload pages, which set their own title/description without re-stating the
 image, were silently shipping an imageless `summary` card while only the home page shared richly. The
 social metadata now flows through one `socialCard()` helper in `lib/seo.ts` that always attaches the
-shared branded card image (the build-time `og/default.png`, the family template) and the
+shared branded card image (`og/default.png`, the brand kit's Muster card) and the
 `summary_large_image` type — the layout and both deep pages all build their card through it, and a unit
 test holds the contract so a page can't drop the image again. A shared link to any case or reload now
 renders the same branded 1200×630 card, with the entity's name in the card copy.

@@ -1,6 +1,7 @@
 import { observancesForDate } from "@/lib/observances";
 import { HUB_URL, REPO_URL, THRUSTCURVE_URL, AEROTECH_URL, CESARONI_URL, LOKI_URL, SIBLING_TOOLS } from "@/lib/links";
 import { GitHubIcon } from "./icons";
+import { FusionSpaceLockup } from "./FusionSpaceBadge";
 
 function Dot() {
   return (
@@ -45,18 +46,11 @@ export default function Footer() {
           href={HUB_URL}
           target="_blank"
           rel="noopener noreferrer"
-          title="Fusion Space — free, polished tools for high-power rocketry"
+          title="FusionSpace — free, polished tools for high-power rocketry"
           className="group inline-flex items-center gap-1.5 transition hover:opacity-80"
         >
           <span>A</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/fusion-space-wordmark.svg"
-            alt="Fusion Space"
-            width={1598}
-            height={281}
-            className="h-5 w-auto"
-          />
+          <FusionSpaceLockup />
           <span>
             project{" "}
             <span aria-hidden className="opacity-0 transition group-hover:opacity-100">

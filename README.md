@@ -1,3 +1,9 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/brand/readme-banner-dark@2x.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/brand/readme-banner-light@2x.png">
+  <img alt="Muster · FS · SW · TOOL 004" src=".github/brand/readme-banner-dark@2x.png" width="100%">
+</picture>
+
 # Muster
 
 [![test](https://github.com/nrdptel/fusionspace-muster/actions/workflows/test.yml/badge.svg)](https://github.com/nrdptel/fusionspace-muster/actions/workflows/test.yml)
