@@ -31,7 +31,7 @@ const JSON_LD = {
     "Shareable links; works offline; installable",
   ],
   isAccessibleForFree: true,
-  publisher: { "@type": "Organization", name: "Fusion Space", url: "https://fusionspace.co" },
+  publisher: { "@type": "Organization", name: "FusionSpace", url: "https://fusionspace.co" },
 };
 
 export default function Page() {

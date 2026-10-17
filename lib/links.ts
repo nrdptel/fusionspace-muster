@@ -6,7 +6,7 @@ export const HUB_URL = "https://fusionspace.co";
 export const REPO_URL = "https://github.com/nrdptel/fusionspace-muster";
 export const KOFI_URL = "https://ko-fi.com/nrdptel";
 
-// Sibling Fusion Space tools, linked inline in the footer the way the live siblings do.
+// Sibling FusionSpace tools, linked inline in the footer the way the live siblings do.
 // The LIVE tools only — Debrief is still in development, so it isn't linked from a
 // launch-ready tool. Muster is omitted (you're already here). The Motor Finder leads,
 // since it's the closest neighbour: it tells you which reload to buy, Muster tells you

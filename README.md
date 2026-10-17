@@ -23,7 +23,7 @@ hardware to buy. Or start from a reload and it works back to the cases and hardw
 always the authority on the hardware it needs** — build to them, and confirm every part with
 the manufacturer before you buy or fly.
 
-Part of [Fusion Space](https://fusionspace.co) — free, polished tools for high-power
+Part of [FusionSpace](https://fusionspace.co) — free, polished tools for high-power
 rocketry. See also the [HPR Motor Finder](https://motor.fusionspace.co),
 [Charge](https://charge.fusionspace.co), and [Window](https://window.fusionspace.co).
 

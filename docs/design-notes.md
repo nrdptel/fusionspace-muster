@@ -1,6 +1,6 @@
 # Muster — design notes
 
-My working read of how Muster fits Fusion Space, and the plan for it. Written down so it can
+My working read of how Muster fits FusionSpace, and the plan for it. Written down so it can
 be corrected early rather than late. Not user-facing.
 
 ## 1. Fitting the family

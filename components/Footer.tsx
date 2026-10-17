@@ -26,7 +26,7 @@ export default function Footer() {
             <GitHubIcon className="h-4 w-4 fill-current" />
             GitHub
           </a>
-          {/* The other live Fusion Space tools, inline the way the siblings cross-link. */}
+          {/* The other live FusionSpace tools, inline the way the siblings cross-link. */}
           {SIBLING_TOOLS.map((tool) => (
             <span key={tool.href} className="inline-flex items-center gap-x-4">
               <Dot />
