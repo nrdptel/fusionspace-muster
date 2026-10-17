@@ -13,8 +13,8 @@ export const SITE_DESCRIPTION =
   "needs, their certification, and the full hardware shopping list. Or start from a reload and " +
   "work back.";
 
-// The shared branded card image, pre-generated at build by scripts/gen-og.mjs from the HPR
-// Motor Finder's exact template so the family reads as one. Resolved absolutely against the
+// The shared branded card image: the FusionSpace brand kit's ready-made Rev C card for Muster,
+// committed as a static file (no longer generated at build). Resolved absolutely against the
 // layout's metadataBase.
 export const OG_IMAGE = "/og/default.png";
 
